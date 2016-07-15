@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Coloring Page</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="coloring.css">
+  <script src="coloring.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-center">Coloring Page</h1>
+    <hr>
+    <div class="row">
+      <div class="col-md-6">
+      <div class="dropdown">
+        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+          Dropdown
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+          <li><a href="#">Action</a></li>
+          <li><a href="#">Another action</a></li>
+          <li><a href="#">Something else here</a></li>
+          <li role="separator" class="divider"></li>
+          <li><a href="#">Separated link</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div id="button-bar">
+        <button id="generate-btn" type="button" class="btn btn-primary">Generate</button>
+        <button id="clear-btn" type="button" class="btn btn-danger">Clear coloring</button>
+        <button id="print-btn" type="button" class="btn btn-default">Print</button>
+        <button id="export-btn" type="button" class="btn btn-default">Export as image</button>
+      </div>
+    </div>
+  </div>
+  <hr>
+  <div id="canvas-container">
+    <canvas id="coloring-page" class="text-center" width="800" height="1000">
+      Canvas not supported.
+    </canvas>
+  </div>
+</div>
+</body>
+</html>
