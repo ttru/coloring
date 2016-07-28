@@ -14,36 +14,54 @@
     <h1 class="text-center">Coloring Page</h1>
     <hr>
     <div class="row">
-      <div class="col-md-6">
-      <div class="dropdown">
-        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-          Dropdown
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-          <li><a href="#">Action</a></li>
-          <li><a href="#">Another action</a></li>
-          <li><a href="#">Something else here</a></li>
-          <li role="separator" class="divider"></li>
-          <li><a href="#">Separated link</a></li>
-        </ul>
+      <div class="col-md-3">
+        <div class="dropdown">
+          <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            Select pattern
+            <span class="caret"></span>
+          </button>
+          <button id="generate-btn" type="button" class="btn btn-primary">New page</button>
+          <!-- <button id="generate-btn" type="button" class="btn btn-danger">Erase all coloring</button> -->
+          <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+            <li><a href="#" class="pattern">Rings</a></li>
+            <li><a href="#" class="pattern">Trees</a></li>
+            <li><a href="#" class="pattern">Leaves</a></li>
+            <li><a href="#" class="pattern">Tiles</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#" class="pattern">Random</a></li>
+          </ul>
+        </div>
       </div>
-    </div>
-    <div class="col-md-6">
-      <div id="button-bar">
-        <button id="generate-btn" type="button" class="btn btn-primary">Generate</button>
-        <button id="clear-btn" type="button" class="btn btn-danger">Clear coloring</button>
+      <div class="col-md-6 text-center">
+        <div id="color-menu">
+          <button type="button" class="btn color-swatch selected"></button>
+          <button type="button" class="btn color-swatch"></button>
+          <button type="button" class="btn color-swatch"></button>
+          <button type="button" class="btn color-swatch"></button>
+          <button type="button" class="btn color-swatch"></button>
+          <button type="button" class="btn color-swatch"></button>
+          <button type="button" class="btn color-swatch"></button>
+          <button type="button" class="btn color-swatch"></button>
+          <button type="button" class="btn color-swatch"></button>
+          <button type="button" class="btn color-swatch"></button>
+          <button type="button" class="btn color-swatch"></button>
+          <button type="button" class="btn color-swatch"></button>
+        </div>
+      </div>
+      <div class="col-md-3 text-right">
         <button id="print-btn" type="button" class="btn btn-default">Print</button>
         <button id="export-btn" type="button" class="btn btn-default">Export as image</button>
       </div>
     </div>
+    <hr>
+    <div id="canvas-container">
+      <canvas id="coloring-page" class="text-center" width="800" height="1000">
+        Canvas not supported.
+      </canvas>
+      <canvas id="coloring-layer" class="text-center" width="800" height="1000">
+        Canvas not supported.
+      </canvas>
+    </div>
   </div>
-  <hr>
-  <div id="canvas-container">
-    <canvas id="coloring-page" class="text-center" width="800" height="1000">
-      Canvas not supported.
-    </canvas>
-  </div>
-</div>
 </body>
 </html>

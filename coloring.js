@@ -1,9 +1,24 @@
 $(document).ready(function() {
+  var colors = ["#C91111", "#D84E09", "#FF8000", "#F6EB20", "#51C201", "#1C8E0D", "#09C5F4", "#2862B9", "#7E44BC", "#FCA8CC", "#943F07", "#000000"];
+
+  var penInfo = {
+    radius: 1,
+    color: "#C91111",
+    alpha: 0.5,
+    lastX: 0,
+    lastY: 0,
+    active: false
+  };
+
   $("#generate-btn").click(function() {
     var canvas = $("#coloring-page")[0];
     if (canvas.getContext) {
       var ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.lineWidth = 3;
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#000000";
+      ctx.fillStyle = "#000000";
       ctx.beginPath();
       ctx.arc(75,75,50,0,Math.PI*2,true); // Outer circle
       ctx.moveTo(110,75);
@@ -46,7 +61,7 @@ $(document).ready(function() {
     var win = window.open(img);
     if (win) {
       //Browser has allowed it to be opened
-      //win.focus();
+      win.focus();
       win.print();
     } else {
       //Browser has blocked it
@@ -64,5 +79,68 @@ $(document).ready(function() {
       //Browser has blocked it
       alert('Please allow popups for this website');
     }
+  });
+  $("#coloring-layer").mousedown(function(e) {
+    var canvas = $("#coloring-layer")[0];
+    if (canvas.getContext) {
+      // http://stackoverflow.com/questions/55677/how-do-i-get-the-coordinates-of-a-mouse-click-on-a-canvas-element/18053642#18053642
+      var rect = canvas.getBoundingClientRect();
+      var x = e.clientX - rect.left - parseInt($(canvas).css("border-left-width"),10);
+      var y = e.clientY - rect.top - parseInt($(canvas).css("border-top-width"),10);
+      penInfo.lastX = x;
+      penInfo.lastY = y;
+      penInfo.active = true;
+
+      var ctx = canvas.getContext('2d');
+      ctx.lineWidth = penInfo.radius * 2;
+      ctx.globalAlpha = penInfo.alpha;
+      ctx.strokeStyle = penInfo.color;
+      ctx.fillStyle = penInfo.color;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.fillRect(x, y, penInfo.radius * 2, penInfo.radius * 2);
+    }
+  });
+  $("#coloring-layer").mousemove(function(e) {
+    if (penInfo.active) {
+      var canvas = $("#coloring-layer")[0];
+      if (canvas.getContext) {
+        var rect = canvas.getBoundingClientRect();
+        var x = e.clientX - rect.left - parseInt($(canvas).css("border-left-width"),10);
+        var y = e.clientY - rect.top - parseInt($(canvas).css("border-top-width"),10);
+        penInfo.lastX = x;
+        penInfo.lastY = y;
+
+        var ctx = canvas.getContext('2d');
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.closePath();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+      }
+    }
+  });
+  $("*").mouseup(function(e) {
+    if (penInfo.active) {
+      var canvas = $("#coloring-layer")[0];
+      if (canvas.getContext) {
+        var ctx = canvas.getContext('2d');
+        ctx.closePath();
+        penInfo.active = false;
+      }
+    }
+  });
+  $(".pattern").click(function() {
+    $("#dropdownMenu1").html($(this).html() + " <span class=\"caret\"></span>");
+    $(".pattern").removeClass("selected");
+    $(this).addClass("selected");
+  });
+  $(".color-swatch").each(function(i) {
+    $(this).css("background-color", colors[i]);
+  });
+  $(".color-swatch").click(function() {
+    penInfo.color = $(this).css("background-color");
+    $(".color-swatch").removeClass("selected");
+    $(this).addClass("selected");
   });
 });
