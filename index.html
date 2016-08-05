@@ -21,7 +21,7 @@
             <span class="caret"></span>
           </button>
           <button id="generate-btn" type="button" class="btn btn-primary">New page</button>
-          <!-- <button id="generate-btn" type="button" class="btn btn-danger">Erase all coloring</button> -->
+          <!--<button id="clear-btn" type="button" class="btn btn-danger">Erase all coloring</button>-->
           <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
             <li><a href="#" class="pattern">Rings</a></li>
             <li><a href="#" class="pattern">Trees</a></li>
@@ -46,7 +46,9 @@
           <button type="button" class="btn color-swatch"></button>
           <button type="button" class="btn color-swatch"></button>
           <button type="button" class="btn color-swatch"></button>
+          <button type="button" class="btn color-swatch"></button>
         </div>
+        <button id="clear-btn" type="button" class="btn btn-danger">Erase all coloring</button>
       </div>
       <div class="col-md-3 text-right">
         <button id="print-btn" type="button" class="btn btn-default">Print</button>
@@ -59,6 +61,9 @@
         Canvas not supported.
       </canvas>
       <canvas id="coloring-layer" class="text-center" width="800" height="1000">
+        Canvas not supported.
+      </canvas>
+      <canvas id="combined-canvas" class="text-center" width="800" height="1000">
         Canvas not supported.
       </canvas>
     </div>
