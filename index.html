@@ -14,7 +14,7 @@
     <h1 class="text-center">Coloring Page</h1>
     <hr>
     <div class="row">
-      <div class="col-md-3">
+      <div class="menu-col col-md-3 text-center">
         <div class="dropdown">
           <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             Select pattern
@@ -32,7 +32,7 @@
           </ul>
         </div>
       </div>
-      <div class="col-md-6 text-center">
+      <div class="menu-col col-md-6 text-center">
         <div id="color-menu">
           <button type="button" class="btn color-swatch selected"></button>
           <button type="button" class="btn color-swatch"></button>
@@ -50,12 +50,13 @@
         </div>
         <button id="clear-btn" type="button" class="btn btn-danger">Erase all coloring</button>
       </div>
-      <div class="col-md-3 text-right">
+      <div class="menu-col col-md-3 text-center">
         <button id="print-btn" type="button" class="btn btn-default">Print</button>
         <button id="export-btn" type="button" class="btn btn-default">Export as image</button>
       </div>
     </div>
     <hr>
+    <br>
     <div id="canvas-container">
       <canvas id="coloring-page" class="text-center" width="800" height="1000">
         Canvas not supported.
