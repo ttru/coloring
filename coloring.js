@@ -86,7 +86,7 @@ var testHappy = function() {
 
 
 $(document).ready(function() {
-  var colors = ["#C91111", "#D84E09", "#FF8000", "#F6EB20", "#51C201", "#1C8E0D", "#09C5F4", "#2862B9", "#7E44BC", "#FCA8CC", "#943F07", "#000000", "#FFFFFF"];
+  var colors = ["#C91111", "#FF8000", "#F6EB20", "#51C201", "#1C8E0D", "#09C5F4", "#2862B9", "#7E44BC", "#AA0570", "#FCA8CC", "#943F07", "#000000", "#FFFFFF"];
 
   var penInfo = {
     radius: 2,
@@ -224,4 +224,30 @@ $(document).ready(function() {
     $(".color-swatch").removeClass("selected");
     $(this).addClass("selected");
   });
+  if (localStorage) {
+    if (localStorage.getItem("coloringPage")) {
+      if ($("#coloring-page")[0].getContext) {
+        var img = new Image();
+        img.src = localStorage.getItem("coloringPage");
+        var ctx = $("#coloring-page")[0].getContext('2d');
+        ctx.drawImage(img, 0, 0);
+      }
+    }
+    if (localStorage.getItem("coloringLayer")) {
+      if ($("#coloring-page")[0].getContext) {
+        var img = new Image();
+        img.src = localStorage.getItem("coloringLayer");
+        var ctx = $("#coloring-layer")[0].getContext('2d');
+        ctx.drawImage(img, 0, 0);
+      }
+    }
+  }
+});
+
+$(window).bind("beforeunload", function() {
+  if (localStorage) {
+    localStorage.setItem("coloringPage", $("#coloring-page")[0].toDataURL("image/png"));
+    localStorage.setItem("coloringLayer", $("#coloring-layer")[0].toDataURL("image/png"));
+  }
+  return;
 });
