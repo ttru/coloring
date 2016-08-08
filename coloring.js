@@ -20,14 +20,18 @@ Ring.prototype.setContextParams = function() {
 };
 
 Ring.prototype.draw = function() {
-  for (var i = 0; i <= this.numLayers; i++) {
-    this.drawCircleLayer(i);
+  for (var i = 1; i <= this.numLayers; i++) {
+    if (Math.random() < 0.5) {
+      this.drawTriangleLayer(i);
+    } else {
+      this.drawCircleLayer(i);
+    }
   }
 };
 
 Ring.prototype.drawCircleLayer = function(layer) {
   if (this.setContextParams()) {
-    var numCircles = layer * this.symmetry
+    var numCircles = layer * this.symmetry;
     var angleInterval = 2 * Math.PI / numCircles;
     var startAngle = (layer % 2) * angleInterval / 2;
     var layerRadius = layer * this.unitLength;
@@ -44,6 +48,31 @@ Ring.prototype.drawCircleLayer = function(layer) {
     }
   }
 };
+
+Ring.prototype.drawTriangleLayer = function(layer) {
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+    var numTriangles = 2 * this.symmetry;
+    var angleInterval = 2 * Math.PI / numTriangles;
+    var startAngle = (layer % 2) * angleInterval / 2;
+    var baseRadius = (layer - 0.5) * this.unitLength;
+    var tipRadius = (layer + 0.5) * this.unitLength;
+    for (var i = 0; i < numTriangles; i++) {
+      var angle = startAngle + i * angleInterval;
+      var firstX = Math.cos(angle) * baseRadius + this.centerX;
+      var firstY = Math.sin(angle) * baseRadius + this.centerY;
+      var secondX = Math.cos(angle + angleInterval) * baseRadius + this.centerX;
+      var secondY = Math.sin(angle + angleInterval) * baseRadius + this.centerY;
+      var tipX = Math.cos(angle + angleInterval / 2) * tipRadius + this.centerX;
+      var tipY = Math.sin(angle + angleInterval / 2) * tipRadius + this.centerY;
+      ctx.beginPath();
+      ctx.moveTo(firstX, firstY);
+      ctx.lineTo(tipX, tipY);
+      ctx.lineTo(secondX, secondY);
+      ctx.stroke();
+    }
+  }
+}
 
 var testHappy = function() {
   var canvas = $("#coloring-page")[0];
