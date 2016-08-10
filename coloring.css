@@ -10,7 +10,10 @@ canvas {
   cursor: crosshair;
   position: absolute;
   top: 0px;
-  left: calc(50% - 400px);
+  left: 0px;
+  right: 0px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #coloring-layer {
