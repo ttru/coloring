@@ -1,5 +1,23 @@
-var Ring = function(canvas, numLayers, fillCanvas, centerX, centerY, radius) {
+var Drawer = function(canvas) {
   this.canvas = canvas;
+}
+
+Drawer.prototype.draw = null;
+
+Drawer.prototype.setContextParams = function() {
+  if (this.canvas.getContext) {
+    var ctx = this.canvas.getContext('2d');
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = "#000000";
+    ctx.fillStyle = "#ffffff";
+    return true;
+  }
+  return false;
+};
+
+var Ring = function(canvas, numLayers, fillCanvas, centerX, centerY, radius) {
+  Drawer.call(this, canvas);
   this.numLayers = numLayers;
   if (fillCanvas) {
     this.centerX = canvas.width / 2;
@@ -12,6 +30,10 @@ var Ring = function(canvas, numLayers, fillCanvas, centerX, centerY, radius) {
   }
   this.symmetry = (Math.random() < 0.5) ? 5 : 6;
 };
+
+Ring.prototype = Object.create(Drawer.prototype);
+
+Ring.prototype.constructor = Ring;
 
 Ring.prototype.setContextParams = function() {
   if (this.canvas.getContext) {
@@ -381,13 +403,25 @@ Ring.prototype.drawWaveLayer = function(layer) {
 }
 
 
-var Sun = function(canvas, numLayers, fillCanvas, centerX, centerY, radius) {
-  Ring.call(this, canvas, numLayers, fillCanvas, centerX, centerY, radius);
+var Sun = function(canvas, numLayers, centerX, centerY, radius) {
+  Ring.call(this, canvas, numLayers, false, centerX, centerY, radius);
 }
 
 Sun.prototype = Object.create(Ring.prototype);
 
 Sun.prototype.constructor = Sun;
+
+Sun.prototype.setContextParams = function() {
+  if (this.canvas.getContext) {
+    var ctx = this.canvas.getContext('2d');
+    ctx.lineWidth = 4;
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = "#000000";
+    ctx.fillStyle = "#ffffff";
+    return true;
+  }
+  return false;
+};
 
 Sun.prototype.draw = function() {
   for (var i = 1; i < this.numLayers; i++) {
@@ -424,6 +458,47 @@ Sun.prototype.draw = function() {
   }
   this.drawDivider(i);
   this.drawStarburstLayer(i);
+}
+
+var PlanetDiagram = function(canvas, numPlanets) {
+  Drawer.call(this, canvas);
+  this.numPlanets = numPlanets;
+}
+
+PlanetDiagram.prototype = Object.create(Drawer.prototype);
+
+PlanetDiagram.constructor = PlanetDiagram;
+
+PlanetDiagram.prototype.draw = function() {
+  var sunRadius = Math.min(this.canvas.width, this.canvas.height) / 4;
+  var centerX = this.canvas.width / 2;
+  var centerY = this.canvas.height / 2;
+  var sun = new Sun(this.canvas, 5, centerX, centerY, sunRadius);
+  sun.draw();
+  if (this.setContextParams()) {
+    var planetGap = (Math.max(this.canvas.width, this.canvas.height) - 2 * sunRadius) / (2 * this.numPlanets);
+    var planetRadius = 9 * planetGap / 20;
+    for (var i = 1; i <= this.numPlanets; i++) {
+      var radius = sunRadius + i * planetGap;
+      var ctx = this.canvas.getContext('2d');
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.stroke();
+      var planetX = Math.random() * this.canvas.width;
+      var planetY = (i % 2 === 0) ? centerY + Math.sqrt(Math.pow(radius, 2) - Math.pow(planetX - centerX, 2)) :  centerY - Math.sqrt(Math.pow(radius, 2) - Math.pow(planetX - centerX, 2));
+
+      var shadowAngle = Math.atan2(planetY - centerY, planetX - centerX);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.beginPath();
+      ctx.arc(planetX, planetY, planetRadius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#000000";
+      ctx.beginPath();
+      ctx.arc(planetX, planetY, planetRadius, shadowAngle - Math.PI / 2, shadowAngle + Math.PI / 2);
+      ctx.fill();
+    }
+  }
 }
 
 var testHappy = function() {
@@ -494,6 +569,10 @@ $(document).ready(function() {
       case "Rings":
         var ring = new Ring($("#coloring-page")[0], 20, true);
         ring.draw();
+        break;
+      case "Planets":
+        var planetDiagram = new PlanetDiagram($("#coloring-page")[0], 10);
+        planetDiagram.draw();
         break;
       default:
         testHappy();
