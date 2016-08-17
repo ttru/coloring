@@ -8,7 +8,7 @@ var Ring = function(canvas, numLayers, fillCanvas, centerX, centerY, radius) {
   } else {
     this.centerX = centerX;
     this.centerY = centerY;
-    this.unitLength = radius / (numLayers + 1);
+    this.unitLength = radius / (numLayers + 0.5);
   }
   this.symmetry = (Math.random() < 0.5) ? 5 : 6;
 };
@@ -378,6 +378,52 @@ Ring.prototype.drawWaveLayer = function(layer) {
       ctx.stroke();
     }
   }
+}
+
+
+var Sun = function(canvas, numLayers, fillCanvas, centerX, centerY, radius) {
+  Ring.call(this, canvas, numLayers, fillCanvas, centerX, centerY, radius);
+}
+
+Sun.prototype = Object.create(Ring.prototype);
+
+Sun.prototype.constructor = Sun;
+
+Sun.prototype.draw = function() {
+  for (var i = 1; i < this.numLayers; i++) {
+    this.drawDivider(i);
+    switch (this.getRandomLayer()) {
+      case "triangle":
+        this.drawTriangleLayer(i);
+        break;
+      case "rectangle":
+        this.drawRectangleLayer(i);
+        break;
+      case "semicircle":
+        this.drawSemicircleLayer(i);
+        break;
+      case "circle":
+        this.drawCircleLayer(i);
+        break;
+      case "bar":
+        this.drawBarLayer(i);
+        break;
+      case "teardrop":
+        this.drawTeardropLayer(i);
+        break;
+      case "flame":
+        this.drawFlameLayer(i);
+        break;
+      case "starburst":
+        this.drawStarburstLayer(i);
+        break;
+      case "wave":
+        this.drawWaveLayer(i);
+        break;
+    }
+  }
+  this.drawDivider(i);
+  this.drawStarburstLayer(i);
 }
 
 var testHappy = function() {
