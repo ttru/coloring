@@ -1,9 +1,15 @@
-var Ring = function(canvas, numLayers) {
+var Ring = function(canvas, numLayers, fillCanvas, centerX, centerY, radius) {
   this.canvas = canvas;
   this.numLayers = numLayers;
-  this.centerX = canvas.width / 2;
-  this.centerY = canvas.height / 2;
-  this.unitLength = Math.sqrt(Math.pow(canvas.width, 2) + Math.pow(canvas.height, 2)) / (2 * numLayers);
+  if (fillCanvas) {
+    this.centerX = canvas.width / 2;
+    this.centerY = canvas.height / 2;
+    this.unitLength = Math.sqrt(Math.pow(canvas.width, 2) + Math.pow(canvas.height, 2)) / (2 * numLayers);
+  } else {
+    this.centerX = centerX;
+    this.centerY = centerY;
+    this.unitLength = radius / (numLayers + 1);
+  }
   this.symmetry = (Math.random() < 0.5) ? 5 : 6;
 };
 
@@ -62,6 +68,7 @@ Ring.prototype.draw = function() {
         break;
     }
   }
+  this.drawDivider(i);
 };
 
 Ring.prototype.drawDivider = function(layer) {
@@ -439,7 +446,7 @@ $(document).ready(function() {
     var selectedPattern = $($(".pattern.selected")[0]).html();
     switch (selectedPattern) {
       case "Rings":
-        var ring = new Ring($("#coloring-page")[0], 20);
+        var ring = new Ring($("#coloring-page")[0], 20, true);
         ring.draw();
         break;
       default:
