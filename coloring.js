@@ -476,7 +476,7 @@ PlanetDiagram.prototype.draw = function() {
   var sun = new Sun(this.canvas, 5, centerX, centerY, sunRadius);
   sun.draw();
   if (this.setContextParams()) {
-    var planetGap = (Math.max(this.canvas.width, this.canvas.height) - 2 * sunRadius) / (2 * this.numPlanets);
+    var planetGap = (Math.max(this.canvas.width, this.canvas.height) - 2 * sunRadius) / (2 * this.numPlanets + 1);
     var planetRadius = 9 * planetGap / 20;
     for (var i = 1; i <= this.numPlanets; i++) {
       var radius = sunRadius + i * planetGap;
@@ -488,10 +488,8 @@ PlanetDiagram.prototype.draw = function() {
       var planetY = (i % 2 === 0) ? centerY + Math.sqrt(Math.pow(radius, 2) - Math.pow(planetX - centerX, 2)) :  centerY - Math.sqrt(Math.pow(radius, 2) - Math.pow(planetX - centerX, 2));
 
       var shadowAngle = Math.atan2(planetY - centerY, planetX - centerX);
-      ctx.fillStyle = "#FFFFFF";
       ctx.beginPath();
       ctx.arc(planetX, planetY, planetRadius, 0, 2 * Math.PI);
-      ctx.fill();
       ctx.stroke();
       ctx.fillStyle = "#000000";
       ctx.beginPath();
