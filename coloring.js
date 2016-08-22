@@ -48,7 +48,7 @@ Ring.prototype.setContextParams = function() {
 };
 
 Ring.prototype.getRandomLayer = function() {
-  var layers = ["triangle", "rectangle", "semicircle", "circle", "bar", "teardrop", "flame", "starburst", "wave"];
+  var layers = ["triangle", "rectangle", "semicircle", "circle", "bar", "teardrop", "flame", "starburst", "wave", "heart"];
   var choice = Math.random();
   for (var i = 0; i < layers.length; i++) {
     if (choice < (i + 1) / layers.length) {
@@ -87,6 +87,9 @@ Ring.prototype.draw = function() {
         break;
       case "wave":
         this.drawWaveLayer(i);
+        break;
+      case "heart":
+        this.drawHeartLayer(i);
         break;
     }
   }
@@ -217,12 +220,12 @@ Ring.prototype.drawSemicircleLayer = function(layer) {
 Ring.prototype.drawRectangleLayer = function(layer) {
   if (this.setContextParams()) {
     var ctx = this.canvas.getContext('2d');
-    var numSemicircles = layer * this.symmetry;
-    var angleInterval = 2 * Math.PI / numSemicircles;
+    var numRects = layer * this.symmetry;
+    var angleInterval = 2 * Math.PI / numRects;
     var startAngle = (layer % 2) * angleInterval / 2;
     var baseRadius = (layer - 0.5) * this.unitLength;
     var tipRadius = (layer + 0.5) * this.unitLength;
-    for (var i = 0; i < numSemicircles; i++) {
+    for (var i = 0; i < numRects; i++) {
       var angle = startAngle + i * angleInterval;
       var lineBaseX = Math.cos(angle + angleInterval / 2) * baseRadius + this.centerX;
       var lineBaseY = Math.sin(angle + angleInterval / 2) * baseRadius + this.centerY;
@@ -239,12 +242,12 @@ Ring.prototype.drawRectangleLayer = function(layer) {
 Ring.prototype.drawBarLayer = function(layer) {
   if (this.setContextParams()) {
     var ctx = this.canvas.getContext('2d');
-    var numSemicircles = layer * this.symmetry;
-    var angleInterval = 2 * Math.PI / numSemicircles;
+    var numBars = layer * this.symmetry;
+    var angleInterval = 2 * Math.PI / numBars;
     var startAngle = (layer % 2) * angleInterval / 2;
     var baseRadius = (layer - 0.5) * this.unitLength;
     var tipRadius = (layer + 0.5) * this.unitLength;
-    for (var i = 0; i < numSemicircles; i++) {
+    for (var i = 0; i < numBars; i++) {
       var angle = startAngle + i * angleInterval;
       var leftAngle = angle + angleInterval / 10;
       var leftLineBaseX = Math.cos(leftAngle) * baseRadius + this.centerX;
@@ -271,13 +274,13 @@ Ring.prototype.drawBarLayer = function(layer) {
 Ring.prototype.drawTeardropLayer = function(layer) {
   if (this.setContextParams()) {
     var ctx = this.canvas.getContext('2d');
-    var numSemicircles = layer * this.symmetry;
-    var angleInterval = 2 * Math.PI / numSemicircles;
+    var numDrops = layer * this.symmetry;
+    var angleInterval = 2 * Math.PI / numDrops;
     var startAngle = (layer % 2) * angleInterval / 2;
     var baseRadius = (layer - 0.5) * this.unitLength;
     var tipRadius = (layer + 0.5) * this.unitLength;
     var controlRadius = baseRadius + (tipRadius - baseRadius) / 3;
-    for (var i = 0; i < numSemicircles; i++) {
+    for (var i = 0; i < numDrops; i++) {
       var angle = startAngle + i * angleInterval;
       var lineBaseX = Math.cos(angle) * baseRadius + this.centerX;
       var lineBaseY = Math.sin(angle) * baseRadius + this.centerY;
@@ -304,13 +307,13 @@ Ring.prototype.drawTeardropLayer = function(layer) {
 Ring.prototype.drawFlameLayer = function(layer) {
   if (this.setContextParams()) {
     var ctx = this.canvas.getContext('2d');
-    var numSemicircles = layer * this.symmetry;
-    var angleInterval = 2 * Math.PI / numSemicircles;
+    var numFlames = layer * this.symmetry;
+    var angleInterval = 2 * Math.PI / numFlames;
     var startAngle = (layer % 2) * angleInterval / 2;
     var baseRadius = (layer - 0.5) * this.unitLength;
     var tipRadius = (layer + 0.5) * this.unitLength;
     var controlRadius = baseRadius + (tipRadius - baseRadius) / 3;
-    for (var i = 0; i < numSemicircles; i++) {
+    for (var i = 0; i < numFlames; i++) {
       var angle = startAngle + i * angleInterval;
       var lineBaseX = Math.cos(angle) * baseRadius + this.centerX;
       var lineBaseY = Math.sin(angle) * baseRadius + this.centerY;
@@ -339,12 +342,12 @@ Ring.prototype.drawFlameLayer = function(layer) {
 Ring.prototype.drawStarburstLayer = function(layer) {
   if (this.setContextParams()) {
     var ctx = this.canvas.getContext('2d');
-    var numTriangles = layer * this.symmetry;
-    var angleInterval = 2 * Math.PI / numTriangles;
+    var numBursts = layer * this.symmetry;
+    var angleInterval = 2 * Math.PI / numBursts;
     var startAngle = (layer % 2) * angleInterval / 2;
     var baseRadius = (layer - 0.5) * this.unitLength;
     var tipRadius = (layer + 0.5) * this.unitLength;
-    for (var i = 0; i < numTriangles; i++) {
+    for (var i = 0; i < numBursts; i++) {
       var angle = startAngle + i * angleInterval;
       var firstX = Math.cos(angle - angleInterval / 2) * baseRadius + this.centerX;
       var firstY = Math.sin(angle - angleInterval / 2) * baseRadius + this.centerY;
@@ -402,6 +405,37 @@ Ring.prototype.drawWaveLayer = function(layer) {
   }
 }
 
+Ring.prototype.drawHeartLayer = function(layer) {
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+    var numHearts = layer * this.symmetry;
+    var angleInterval = 2 * Math.PI / numHearts;
+    var startAngle = (layer % 2) * angleInterval / 2;
+    var baseRadius = (layer - 0.5) * this.unitLength;
+    var tipRadius = (layer + 0.85) * this.unitLength;
+    var length = tipRadius - baseRadius;
+    for (var i = 0; i < numHearts; i++) {
+      var angle = startAngle + i * angleInterval;
+      var baseX = Math.cos(angle) * baseRadius + this.centerX;
+      var baseY = Math.sin(angle) * baseRadius + this.centerY;
+      var tipX = Math.cos(angle) * tipRadius + this.centerX;
+      var tipY = Math.sin(angle) * tipRadius + this.centerY;
+      var firstCPX = baseX + Math.cos(angle - Math.PI / 3) * length;
+      var firstCPY = baseY + Math.sin(angle - Math.PI / 3) * length;
+      var secondCPX = baseX + Math.cos(angle + Math.PI / 3) * length;
+      var secondCPY = baseY + Math.sin(angle + Math.PI / 3) * length;
+      var cleftX = Math.cos(angle) * (baseRadius + length / 2) + this.centerX;
+      var cleftY = Math.sin(angle) * (baseRadius + length / 2) + this.centerY;
+      ctx.beginPath();
+      ctx.moveTo(baseX, baseY);
+      ctx.bezierCurveTo(firstCPX, firstCPY, tipX, tipY, cleftX, cleftY);
+      ctx.moveTo(baseX, baseY);
+      ctx.bezierCurveTo(secondCPX, secondCPY, tipX, tipY, cleftX, cleftY);
+      ctx.stroke();
+    }
+  }
+}
+
 
 var Sun = function(canvas, numLayers, centerX, centerY, radius) {
   Ring.call(this, canvas, numLayers, false, centerX, centerY, radius);
@@ -454,10 +488,97 @@ Sun.prototype.draw = function() {
       case "wave":
         this.drawWaveLayer(i);
         break;
+      case "heart":
+        this.drawHeartLayer(i);
+        break;
     }
   }
   this.drawDivider(i);
   this.drawStarburstLayer(i);
+}
+
+var Star = function(canvas, radius, centerX, centerY, angleOffset) {
+  Drawer.call(this, canvas);
+  this.radius = radius;
+  this.centerX = centerX;
+  this.centerY = centerY;
+  this.angleOffset = angleOffset;
+}
+
+Star.prototype = Object.create(Drawer.prototype);
+
+Star.constructor = Star;
+
+Star.prototype.setContextParams = function() {
+  if (this.canvas.getContext) {
+    var ctx = this.canvas.getContext('2d');
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = "#000000";
+    ctx.fillStyle = "#ffffff";
+    return true;
+  }
+  return false;
+};
+
+Star.prototype.draw = function() {
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+    ctx.beginPath();
+    var angle = Math.PI / 2 + this.angleOffset;
+    var tipX = this.centerX + Math.cos(angle) * this.radius;
+    var tipY = this.centerY - Math.sin(angle) * this.radius;
+    ctx.moveTo(tipX, tipY);
+    for (var i = 0; i < 5; i++) {
+      var jointX = this.centerX + Math.cos(angle + Math.PI / 5) * this.radius / 2;
+      var jointY = this.centerY - Math.sin(angle + Math.PI / 5) * this.radius / 2;
+      ctx.lineTo(jointX, jointY);
+      angle += 2 * Math.PI / 5;
+      tipX = this.centerX + Math.cos(angle) * this.radius;
+      tipY = this.centerY - Math.sin(angle) * this.radius;
+      ctx.lineTo(tipX, tipY);
+    }
+    ctx.stroke();
+  }
+}
+
+var AltStar = function(canvas, radius, centerX, centerY) {
+  Drawer.call(this, canvas);
+  this.radius = radius;
+  this.centerX = centerX;
+  this.centerY = centerY;
+}
+
+AltStar.prototype = Object.create(Drawer.prototype);
+
+AltStar.constructor = AltStar;
+
+AltStar.prototype.setContextParams = function() {
+  if (this.canvas.getContext) {
+    var ctx = this.canvas.getContext('2d');
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = "#000000";
+    ctx.fillStyle = "#ffffff";
+    return true;
+  }
+  return false;
+};
+
+AltStar.prototype.draw = function() {
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+    ctx.beginPath();
+    var startX = this.centerX + Math.cos(0) * this.radius;
+    var startY = this.centerY - Math.sin(0) * this.radius;
+    ctx.moveTo(startX, startY);
+    for (var angle = Math.PI / 2; angle <= 2 * Math.PI; angle += Math.PI / 2) {
+      var nextX = this.centerX + Math.cos(angle) * this.radius;
+      var nextY = this.centerY - Math.sin(angle) * this.radius;
+      ctx.quadraticCurveTo(this.centerX, this.centerY, nextX, nextY);
+    }
+    ctx.stroke();
+  }
 }
 
 var PlanetDiagram = function(canvas, numPlanets) {
@@ -476,7 +597,7 @@ PlanetDiagram.prototype.draw = function() {
   var sun = new Sun(this.canvas, 5, centerX, centerY, sunRadius);
   sun.draw();
   if (this.setContextParams()) {
-    var planetGap = (Math.max(this.canvas.width, this.canvas.height) - 2 * sunRadius) / (2 * this.numPlanets + 1);
+    var planetGap = (Math.max(this.canvas.width, this.canvas.height) - 2 * sunRadius) / (2 * this.numPlanets + 2);
     var planetRadius = 9 * planetGap / 20;
     for (var i = 1; i <= this.numPlanets; i++) {
       var radius = sunRadius + i * planetGap;
@@ -495,6 +616,33 @@ PlanetDiagram.prototype.draw = function() {
       ctx.beginPath();
       ctx.arc(planetX, planetY, planetRadius, shadowAngle - Math.PI / 2, shadowAngle + Math.PI / 2);
       ctx.fill();
+    }
+    var starBorderRadius = sunRadius + (this.numPlanets + 1) * planetGap;
+    var pageDiagonal = Math.sqrt(Math.pow(this.canvas.width, 2) + Math.pow(this.canvas.height, 2));
+    var starRadius = planetRadius / 2;
+    for (var currentBorder = starBorderRadius; currentBorder <= pageDiagonal / 2; currentBorder += (10 * starRadius / 4)) {
+      var starAngleIncrement = 2 * Math.asin(starRadius / currentBorder) * (5 / 4);
+      for (var angle = 0; angle < 2 * Math.PI; angle += starAngleIncrement) {
+        var starX = centerX + currentBorder * Math.cos(angle);
+        var starY = centerY - currentBorder * Math.sin(angle);
+        var star = new Star(this.canvas, starRadius, starX, starY, angle + Math.PI / 2);
+        star.draw();
+      }
+    }
+    for (var i = 0; i < 30; i++) {
+      var altStarRadius = planetRadius * (1 - Math.random() / 2);
+      var angle = Math.random() * 2 * Math.PI;
+      var minRadius = sunRadius + altStarRadius * (5 / 4);
+      var truncatedRadius = (this.canvas.width < this.canvas.height) ?
+        Math.sqrt(Math.pow(this.canvas.width / 2, 2) + Math.pow(Math.tan(angle) * this.canvas.width / 2, 2)) :
+        Math.sqrt(Math.pow(this.canvas.height / 2, 2) + Math.pow((this.canvas.height / 2) / Math.tan(angle), 2));
+      var maxRadius = Math.min(starBorderRadius, truncatedRadius) - altStarRadius * (5 / 4);
+      var radius = Math.random() * (maxRadius - minRadius) + minRadius;
+      var altStarX = centerX + Math.cos(angle) * radius;
+      var altStarY = centerY + Math.sin(angle) * radius;
+      var altStar = new AltStar(this.canvas, altStarRadius, altStarX, altStarY);
+      altStar.draw();
+      console.log(altStarX + " " + altStarY + " " + altStarRadius);
     }
   }
 }
@@ -552,24 +700,24 @@ $(document).ready(function() {
   };
 
   $("#generate-btn").click(function() {
-    var canvas = $("#coloring-page")[0];
-    if (canvas.getContext) {
-      var ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var pageCanvas = $("#coloring-page")[0];
+    if (pageCanvas.getContext) {
+      var ctx = pageCanvas.getContext('2d');
+      ctx.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
     }
-    canvas = $("#coloring-layer")[0];
-    if (canvas.getContext) {
-      var ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var coloringCanvas = $("#coloring-layer")[0];
+    if (coloringCanvas.getContext) {
+      var ctx = coloringCanvas.getContext('2d');
+      ctx.clearRect(0, 0, coloringCanvas.width, coloringCanvas.height);
     }
     var selectedPattern = $($(".pattern.selected")[0]).html();
     switch (selectedPattern) {
       case "Rings":
-        var ring = new Ring($("#coloring-page")[0], 20, true);
+        var ring = new Ring(pageCanvas, 20, true);
         ring.draw();
         break;
       case "Planets":
-        var planetDiagram = new PlanetDiagram($("#coloring-page")[0], 10);
+        var planetDiagram = new PlanetDiagram(pageCanvas, 10);
         planetDiagram.draw();
         break;
       default:
