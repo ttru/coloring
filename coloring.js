@@ -16,6 +16,14 @@ Drawer.prototype.setContextParams = function() {
   return false;
 };
 
+Drawer.prototype.rotatePoint = function(x, y, originX, originY, angle) {
+  var translatedX = x - originX;
+  var translatedY = originY - y;
+  var rotatedX = translatedX * Math.cos(angle) - translatedY * Math.sin(angle);
+  var rotatedY = translatedX * Math.sin(angle) + translatedY * Math.cos(angle);
+  return [rotatedX + originX, originY - rotatedY];
+};
+
 var Ring = function(canvas, numLayers, fillCanvas, centerX, centerY, radius) {
   Drawer.call(this, canvas);
   this.numLayers = numLayers;
@@ -642,7 +650,67 @@ PlanetDiagram.prototype.draw = function() {
       var altStarY = centerY + Math.sin(angle) * radius;
       var altStar = new AltStar(this.canvas, altStarRadius, altStarX, altStarY);
       altStar.draw();
-      console.log(altStarX + " " + altStarY + " " + altStarRadius);
+    }
+  }
+}
+
+var Tree = function(canvas, trunkWidth, trunkHeight, levels, branchFactor) {
+  Drawer.call(this, canvas);
+  this.trunkWidth = trunkWidth;
+  this.trunkHeight = trunkHeight;
+  this.levels = levels;
+  this.branchFactor = branchFactor;
+}
+
+Tree.prototype = Object.create(Drawer.prototype);
+
+Tree.constructor = Tree;
+
+Tree.prototype.draw = function() {
+  if (this.setContextParams()) {
+    this.drawTree(this.levels, 0, this.canvas.width / 2, this.canvas.height, this.trunkWidth, this.trunkHeight);
+  }
+}
+
+Tree.prototype.drawTree = function(level, angle, baseCenterX, baseCenterY, trunkWidth, trunkHeight) {
+  if (level === 0) {
+    var leftBase = this.rotatePoint(baseCenterX - trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
+    var rightBase = this.rotatePoint(baseCenterX + trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
+    var tip = this.rotatePoint(baseCenterX, baseCenterY - trunkHeight, baseCenterX, baseCenterY, angle);
+    var ctx = this.canvas.getContext('2d');
+    ctx.moveTo(leftBase[0], leftBase[1]);
+    ctx.lineTo(tip[0], tip[1]);
+    ctx.lineTo(rightBase[0], rightBase[1]);
+    ctx.stroke();
+  } else {
+    var leftBase = this.rotatePoint(baseCenterX - trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
+    var rightBase = this.rotatePoint(baseCenterX + trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
+    var leftTop = this.rotatePoint(baseCenterX - trunkWidth / 2, baseCenterY - trunkHeight, baseCenterX, baseCenterY, angle);
+    var rightTop = this.rotatePoint(baseCenterX + trunkWidth / 2, baseCenterY - trunkHeight, baseCenterX, baseCenterY, angle);
+    var branchOutPoints = new Array(this.branchFactor - 1);
+    for (var i = 1; i < this.branchFactor; i++) {
+      var branchAngle = Math.PI * (this.branchFactor - i) / this.branchFactor;
+      var pointX = baseCenterX + Math.cos(branchAngle) * (trunkWidth / 2);
+      var pointY = baseCenterY - trunkHeight - Math.sin(branchAngle) * (trunkWidth / 2);
+      branchOutPoints[i - 1] = this.rotatePoint(pointX, pointY, baseCenterX, baseCenterY, angle);
+    }
+    var ctx = this.canvas.getContext('2d');
+    ctx.moveTo(leftBase[0], leftBase[1]);
+    ctx.lineTo(leftTop[0], leftTop[1]);
+    for (var i = 0; i < branchOutPoints.length; i++) {
+      ctx.lineTo(branchOutPoints[i][0], branchOutPoints[i][1]);
+    }
+    ctx.lineTo(rightTop[0], rightTop[1]);
+    ctx.lineTo(rightBase[0], rightBase[1]);
+    ctx.stroke();
+    var newWidth = trunkWidth * Math.tan(Math.PI / (2 * this.branchFactor));
+    var newHeight = trunkHeight * (newWidth / trunkWidth);
+    for (var i = 0; i < this.branchFactor; i++) {
+      var branchAngle = Math.PI * (this.branchFactor - i) / this.branchFactor - Math.PI / (2 * this.branchFactor);
+      var pointX = baseCenterX + Math.cos(branchAngle) * (trunkWidth / 2);
+      var pointY = baseCenterY - trunkHeight - Math.sin(branchAngle) * (trunkWidth / 2);
+      var rotatedPoint = this.rotatePoint(pointX, pointY, baseCenterX, baseCenterY, angle);
+      this.drawTree(level - 1, angle + branchAngle - Math.PI / 2, rotatedPoint[0], rotatedPoint[1], newWidth, newHeight);
     }
   }
 }
@@ -719,6 +787,10 @@ $(document).ready(function() {
       case "Planets":
         var planetDiagram = new PlanetDiagram(pageCanvas, 10);
         planetDiagram.draw();
+        break;
+      case "Trees":
+        var tree = new Tree(pageCanvas, 50, 200, 3, 4);
+        tree.draw();
         break;
       default:
         testHappy();
