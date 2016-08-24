@@ -772,6 +772,9 @@ $(document).ready(function() {
     if (pageCanvas.getContext) {
       var ctx = pageCanvas.getContext('2d');
       ctx.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = "#000000";
+      ctx.strokeRect(0, 0, pageCanvas.width, pageCanvas.height);
     }
     var coloringCanvas = $("#coloring-layer")[0];
     if (coloringCanvas.getContext) {
