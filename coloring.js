@@ -588,11 +588,11 @@ PlanetDiagram.prototype.draw = function() {
   var sun = new Sun(this.canvas, 5, centerX, centerY, sunRadius);
   sun.draw();
   if (this.setContextParams()) {
-    var planetGap = (Math.max(this.canvas.width, this.canvas.height) - 2 * sunRadius) / (2 * this.numPlanets + 2);
+    var planetGap = (Math.max(this.canvas.width, this.canvas.height) - 2 * sunRadius) / (2 * this.numPlanets + 3);
     var planetRadius = 9 * planetGap / 20;
     var starBorderRadius = sunRadius + (this.numPlanets + 1) * planetGap;
     var pageDiagonal = Math.sqrt(Math.pow(this.canvas.width, 2) + Math.pow(this.canvas.height, 2));
-    var starRadius = planetRadius / 2;
+    var starRadius = 5 * planetRadius / 8;
     for (var currentBorder = starBorderRadius; currentBorder <= pageDiagonal / 2; currentBorder += (10 * starRadius / 4)) {
       var starAngleIncrement = 2 * Math.asin(starRadius / currentBorder) * (5 / 4);
       for (var angle = 0; angle < 2 * Math.PI; angle += starAngleIncrement) {
@@ -602,8 +602,8 @@ PlanetDiagram.prototype.draw = function() {
         star.draw();
       }
     }
-    for (var i = 0; i < 30; i++) {
-      var altStarRadius = planetRadius * (1 - Math.random() / 2);
+    for (var i = 0; i < 40; i++) {
+      var altStarRadius = planetRadius * (1/4 + 1 * Math.random() / 2);
       var angle = Math.random() * 2 * Math.PI;
       var minRadius = sunRadius + altStarRadius * (5 / 4);
       var truncatedRadius = (this.canvas.width < this.canvas.height) ?
@@ -784,11 +784,11 @@ $(document).ready(function() {
     var selectedPattern = $($(".pattern.selected")[0]).html();
     switch (selectedPattern) {
       case "Rings":
-        var ring = new Ring(pageCanvas, 20, true);
+        var ring = new Ring(pageCanvas, 15, true);
         ring.draw();
         break;
       case "Planets":
-        var planetDiagram = new PlanetDiagram(pageCanvas, 10);
+        var planetDiagram = new PlanetDiagram(pageCanvas, 6);
         planetDiagram.draw();
         break;
       case "Trees":
