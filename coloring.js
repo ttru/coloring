@@ -10,7 +10,8 @@ Drawer.prototype.setContextParams = function() {
     ctx.lineWidth = 3;
     ctx.globalAlpha = 1;
     ctx.strokeStyle = "#000000";
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#000000";
+    ctx.globalCompositeOperation = "source-over";
     return true;
   }
   return false;
@@ -42,18 +43,6 @@ var Ring = function(canvas, numLayers, fillCanvas, centerX, centerY, radius) {
 Ring.prototype = Object.create(Drawer.prototype);
 
 Ring.prototype.constructor = Ring;
-
-Ring.prototype.setContextParams = function() {
-  if (this.canvas.getContext) {
-    var ctx = this.canvas.getContext('2d');
-    ctx.lineWidth = 3;
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = "#000000";
-    ctx.fillStyle = "#ffffff";
-    return true;
-  }
-  return false;
-};
 
 Ring.prototype.getRandomLayer = function() {
   var layers = ["triangle", "rectangle", "semicircle", "circle", "bar", "teardrop", "flame", "starburst", "wave", "heart"];
@@ -454,12 +443,9 @@ Sun.prototype = Object.create(Ring.prototype);
 Sun.prototype.constructor = Sun;
 
 Sun.prototype.setContextParams = function() {
-  if (this.canvas.getContext) {
+  if (Drawer.prototype.setContextParams.call(this)) {
     var ctx = this.canvas.getContext('2d');
     ctx.lineWidth = 4;
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = "#000000";
-    ctx.fillStyle = "#ffffff";
     return true;
   }
   return false;
@@ -518,12 +504,9 @@ Star.prototype = Object.create(Drawer.prototype);
 Star.constructor = Star;
 
 Star.prototype.setContextParams = function() {
-  if (this.canvas.getContext) {
+  if (Drawer.prototype.setContextParams.call(this)) {
     var ctx = this.canvas.getContext('2d');
     ctx.lineWidth = 2;
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = "#000000";
-    ctx.fillStyle = "#ffffff";
     return true;
   }
   return false;
@@ -562,12 +545,9 @@ AltStar.prototype = Object.create(Drawer.prototype);
 AltStar.constructor = AltStar;
 
 AltStar.prototype.setContextParams = function() {
-  if (this.canvas.getContext) {
+  if (Drawer.prototype.setContextParams.call(this)) {
     var ctx = this.canvas.getContext('2d');
     ctx.lineWidth = 2;
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = "#000000";
-    ctx.fillStyle = "#ffffff";
     return true;
   }
   return false;
@@ -585,6 +565,9 @@ AltStar.prototype.draw = function() {
       var nextY = this.centerY - Math.sin(angle) * this.radius;
       ctx.quadraticCurveTo(this.centerX, this.centerY, nextX, nextY);
     }
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
     ctx.stroke();
   }
 }
@@ -607,24 +590,6 @@ PlanetDiagram.prototype.draw = function() {
   if (this.setContextParams()) {
     var planetGap = (Math.max(this.canvas.width, this.canvas.height) - 2 * sunRadius) / (2 * this.numPlanets + 2);
     var planetRadius = 9 * planetGap / 20;
-    for (var i = 1; i <= this.numPlanets; i++) {
-      var radius = sunRadius + i * planetGap;
-      var ctx = this.canvas.getContext('2d');
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-      ctx.stroke();
-      var planetX = Math.random() * this.canvas.width;
-      var planetY = (i % 2 === 0) ? centerY + Math.sqrt(Math.pow(radius, 2) - Math.pow(planetX - centerX, 2)) :  centerY - Math.sqrt(Math.pow(radius, 2) - Math.pow(planetX - centerX, 2));
-
-      var shadowAngle = Math.atan2(planetY - centerY, planetX - centerX);
-      ctx.beginPath();
-      ctx.arc(planetX, planetY, planetRadius, 0, 2 * Math.PI);
-      ctx.stroke();
-      ctx.fillStyle = "#000000";
-      ctx.beginPath();
-      ctx.arc(planetX, planetY, planetRadius, shadowAngle - Math.PI / 2, shadowAngle + Math.PI / 2);
-      ctx.fill();
-    }
     var starBorderRadius = sunRadius + (this.numPlanets + 1) * planetGap;
     var pageDiagonal = Math.sqrt(Math.pow(this.canvas.width, 2) + Math.pow(this.canvas.height, 2));
     var starRadius = planetRadius / 2;
@@ -651,20 +616,50 @@ PlanetDiagram.prototype.draw = function() {
       var altStar = new AltStar(this.canvas, altStarRadius, altStarX, altStarY);
       altStar.draw();
     }
+    this.setContextParams();
+    for (var i = 1; i <= this.numPlanets; i++) {
+      var radius = sunRadius + i * planetGap;
+      var ctx = this.canvas.getContext('2d');
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.stroke();
+      var planetX = Math.random() * this.canvas.width;
+      var planetY = (i % 2 === 0) ? centerY + Math.sqrt(Math.pow(radius, 2) - Math.pow(planetX - centerX, 2)) :  centerY - Math.sqrt(Math.pow(radius, 2) - Math.pow(planetX - centerX, 2));
+
+      var shadowAngle = Math.atan2(planetY - centerY, planetX - centerX);
+      ctx.beginPath();
+      ctx.arc(planetX, planetY, planetRadius, 0, 2 * Math.PI);
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(planetX, planetY, planetRadius, shadowAngle - Math.PI / 2, shadowAngle + Math.PI / 2);
+      ctx.fill();
+    }
   }
 }
 
-var Tree = function(canvas, trunkWidth, trunkHeight, levels, branchFactor) {
+var Tree = function(canvas, trunkWidth, trunkHeight, levels, branchFactor, branchProbability) {
   Drawer.call(this, canvas);
   this.trunkWidth = trunkWidth;
   this.trunkHeight = trunkHeight;
   this.levels = levels;
-  this.branchFactor = branchFactor;
+  this.branchFactor = branchFactor + 2;
+  this.branchProbability = branchProbability;
 }
 
 Tree.prototype = Object.create(Drawer.prototype);
 
 Tree.constructor = Tree;
+
+Tree.prototype.setContextParams = function() {
+  if (Drawer.prototype.setContextParams.call(this)) {
+    var ctx = this.canvas.getContext('2d');
+    return true;
+  }
+  return false;
+};
 
 Tree.prototype.draw = function() {
   if (this.setContextParams()) {
@@ -673,14 +668,18 @@ Tree.prototype.draw = function() {
 }
 
 Tree.prototype.drawTree = function(level, angle, baseCenterX, baseCenterY, trunkWidth, trunkHeight) {
+  var ctx = this.canvas.getContext('2d');
+  ctx.beginPath();
   if (level === 0) {
     var leftBase = this.rotatePoint(baseCenterX - trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
     var rightBase = this.rotatePoint(baseCenterX + trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
     var tip = this.rotatePoint(baseCenterX, baseCenterY - trunkHeight, baseCenterX, baseCenterY, angle);
-    var ctx = this.canvas.getContext('2d');
     ctx.moveTo(leftBase[0], leftBase[1]);
     ctx.lineTo(tip[0], tip[1]);
     ctx.lineTo(rightBase[0], rightBase[1]);
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
     ctx.stroke();
   } else {
     var leftBase = this.rotatePoint(baseCenterX - trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
@@ -689,12 +688,11 @@ Tree.prototype.drawTree = function(level, angle, baseCenterX, baseCenterY, trunk
     var rightTop = this.rotatePoint(baseCenterX + trunkWidth / 2, baseCenterY - trunkHeight, baseCenterX, baseCenterY, angle);
     var branchOutPoints = new Array(this.branchFactor - 1);
     for (var i = 1; i < this.branchFactor; i++) {
-      var branchAngle = Math.PI * (this.branchFactor - i) / this.branchFactor;
-      var pointX = baseCenterX + Math.cos(branchAngle) * (trunkWidth / 2);
-      var pointY = baseCenterY - trunkHeight - Math.sin(branchAngle) * (trunkWidth / 2);
+      var branchAngle = (4 / 3) * Math.PI - (5 / 3) * Math.PI * i / this.branchFactor;
+      var pointX = baseCenterX + Math.cos(branchAngle) * trunkWidth;
+      var pointY = baseCenterY - trunkHeight - ((Math.sqrt(3) / 2) * trunkWidth) - Math.sin(branchAngle) * trunkWidth;
       branchOutPoints[i - 1] = this.rotatePoint(pointX, pointY, baseCenterX, baseCenterY, angle);
     }
-    var ctx = this.canvas.getContext('2d');
     ctx.moveTo(leftBase[0], leftBase[1]);
     ctx.lineTo(leftTop[0], leftTop[1]);
     for (var i = 0; i < branchOutPoints.length; i++) {
@@ -702,15 +700,20 @@ Tree.prototype.drawTree = function(level, angle, baseCenterX, baseCenterY, trunk
     }
     ctx.lineTo(rightTop[0], rightTop[1]);
     ctx.lineTo(rightBase[0], rightBase[1]);
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
     ctx.stroke();
-    var newWidth = trunkWidth * Math.tan(Math.PI / (2 * this.branchFactor));
+    var newWidth = 2 * trunkWidth * Math.sin((5 / 3) * Math.PI / (2 * this.branchFactor));
     var newHeight = trunkHeight * (newWidth / trunkWidth);
-    for (var i = 0; i < this.branchFactor; i++) {
-      var branchAngle = Math.PI * (this.branchFactor - i) / this.branchFactor - Math.PI / (2 * this.branchFactor);
-      var pointX = baseCenterX + Math.cos(branchAngle) * (trunkWidth / 2);
-      var pointY = baseCenterY - trunkHeight - Math.sin(branchAngle) * (trunkWidth / 2);
-      var rotatedPoint = this.rotatePoint(pointX, pointY, baseCenterX, baseCenterY, angle);
-      this.drawTree(level - 1, angle + branchAngle - Math.PI / 2, rotatedPoint[0], rotatedPoint[1], newWidth, newHeight);
+    for (var i = 1; i < this.branchFactor - 1; i++) {
+      if (Math.random() < this.branchProbability) {
+        var branchAngle = (4 / 3) * Math.PI - (5 / 3) * Math.PI * (i + 1 / 2) / this.branchFactor;
+        var pointX, pointY;
+        pointX = (branchOutPoints[i - 1][0] + branchOutPoints[i][0]) / 2;
+        pointY = (branchOutPoints[i - 1][1] + branchOutPoints[i][1]) / 2;
+        this.drawTree(level - 1, angle + branchAngle - Math.PI / 2, pointX, pointY, newWidth, newHeight);
+      }
     }
   }
 }
@@ -772,9 +775,6 @@ $(document).ready(function() {
     if (pageCanvas.getContext) {
       var ctx = pageCanvas.getContext('2d');
       ctx.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
-      ctx.lineWidth = 8;
-      ctx.strokeStyle = "#000000";
-      ctx.strokeRect(0, 0, pageCanvas.width, pageCanvas.height);
     }
     var coloringCanvas = $("#coloring-layer")[0];
     if (coloringCanvas.getContext) {
@@ -792,12 +792,16 @@ $(document).ready(function() {
         planetDiagram.draw();
         break;
       case "Trees":
-        var tree = new Tree(pageCanvas, 50, 200, 3, 4);
+        var tree = new Tree(pageCanvas, 75, 900/4, 4, 8, 0.7);
         tree.draw();
         break;
       default:
         testHappy();
     }
+    var ctx = pageCanvas.getContext('2d');
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = "#000000";
+    ctx.strokeRect(0, 0, pageCanvas.width, pageCanvas.height);
 
   });
   $("#clear-btn").click(function() {
