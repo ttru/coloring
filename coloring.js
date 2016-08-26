@@ -663,24 +663,48 @@ Tree.prototype.setContextParams = function() {
 
 Tree.prototype.draw = function() {
   if (this.setContextParams()) {
-    this.drawTree(this.levels, 0, this.canvas.width / 2, this.canvas.height, this.trunkWidth, this.trunkHeight);
+    var ctx = this.canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.moveTo(this.canvas.width / 2 - 2 * this.trunkWidth / 3, 2 * this.canvas.height / 3);
+    ctx.lineTo(this.canvas.width / 2 - this.trunkWidth / 2, this.canvas.height / 2);
+    this.drawTree(this.levels, 0, this.canvas.width / 2, this.canvas.height / 2, this.trunkWidth, this.trunkHeight);
+    ctx.lineTo(this.canvas.width / 2 + 2 * this.trunkWidth / 3, 2 * this.canvas.height / 3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.lineWidth = 8;
+    ctx.stroke();
+    ctx.lineWidth = 2;
+    ctx.save();
+    ctx.clip();
+    ctx.globalCompositeOperation = "source-in";
+    // ctx.beginPath();
+    // for (var y = 0; y <= this.canvas.height; y += 30) {
+    //   ctx.moveTo(0, y);
+    //   ctx.lineTo(this.canvas.width, y);
+    // }
+    // for (var x = 0; x <= this.canvas.width; x += 30) {
+    //   ctx.moveTo(x, 0);
+    //   ctx.lineTo(x, this.canvas.height);
+    // }
+    // ctx.stroke();
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.restore();
   }
 }
 
 Tree.prototype.drawTree = function(level, angle, baseCenterX, baseCenterY, trunkWidth, trunkHeight) {
   var ctx = this.canvas.getContext('2d');
-  ctx.beginPath();
+  //ctx.beginPath();
   if (level === 0) {
     var leftBase = this.rotatePoint(baseCenterX - trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
     var rightBase = this.rotatePoint(baseCenterX + trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
     var tip = this.rotatePoint(baseCenterX, baseCenterY - trunkHeight, baseCenterX, baseCenterY, angle);
-    ctx.moveTo(leftBase[0], leftBase[1]);
     ctx.lineTo(tip[0], tip[1]);
     ctx.lineTo(rightBase[0], rightBase[1]);
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.fill();
-    ctx.globalCompositeOperation = "source-over";
-    ctx.stroke();
+    //ctx.globalCompositeOperation = "destination-out";
+    //ctx.fill();
+    // ctx.globalCompositeOperation = "source-over";
+    //ctx.stroke();
   } else {
     var leftBase = this.rotatePoint(baseCenterX - trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
     var rightBase = this.rotatePoint(baseCenterX + trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
@@ -693,28 +717,34 @@ Tree.prototype.drawTree = function(level, angle, baseCenterX, baseCenterY, trunk
       var pointY = baseCenterY - trunkHeight - ((Math.sqrt(3) / 2) * trunkWidth) - Math.sin(branchAngle) * trunkWidth;
       branchOutPoints[i - 1] = this.rotatePoint(pointX, pointY, baseCenterX, baseCenterY, angle);
     }
-    ctx.moveTo(leftBase[0], leftBase[1]);
-    ctx.lineTo(leftTop[0], leftTop[1]);
-    for (var i = 0; i < branchOutPoints.length; i++) {
-      ctx.lineTo(branchOutPoints[i][0], branchOutPoints[i][1]);
+    var branchArray = new Array(this.branchFactor);
+    for (var i = 0; i < branchArray.length; i++) {
+      if (i === 0 || i === branchArray.length - 1) {
+        branchArray[i] = false;
+      } else {
+        branchArray[i] = (Math.random() < this.branchProbability);
+      }
     }
-    ctx.lineTo(rightTop[0], rightTop[1]);
-    ctx.lineTo(rightBase[0], rightBase[1]);
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.fill();
-    ctx.globalCompositeOperation = "source-over";
-    ctx.stroke();
+    ctx.lineTo(leftTop[0], leftTop[1]);
+    //ctx.globalCompositeOperation = "destination-out";
+    //ctx.fill();
+    // ctx.globalCompositeOperation = "source-over";
+    //ctx.stroke();
     var newWidth = 2 * trunkWidth * Math.sin((5 / 3) * Math.PI / (2 * this.branchFactor));
     var newHeight = trunkHeight * (newWidth / trunkWidth);
-    for (var i = 1; i < this.branchFactor - 1; i++) {
-      if (Math.random() < this.branchProbability) {
+    for (var i = 0; i < this.branchFactor; i++) {
+      if (branchArray[i]) {
         var branchAngle = (4 / 3) * Math.PI - (5 / 3) * Math.PI * (i + 1 / 2) / this.branchFactor;
         var pointX, pointY;
         pointX = (branchOutPoints[i - 1][0] + branchOutPoints[i][0]) / 2;
         pointY = (branchOutPoints[i - 1][1] + branchOutPoints[i][1]) / 2;
         this.drawTree(level - 1, angle + branchAngle - Math.PI / 2, pointX, pointY, newWidth, newHeight);
+      } else if (i !== this.branchFactor - 1) {
+        ctx.lineTo(branchOutPoints[i][0], branchOutPoints[i][1]);
       }
     }
+    ctx.lineTo(rightTop[0], rightTop[1]);
+    ctx.lineTo(rightBase[0], rightBase[1]);
   }
 }
 
@@ -792,7 +822,7 @@ $(document).ready(function() {
         planetDiagram.draw();
         break;
       case "Trees":
-        var tree = new Tree(pageCanvas, 75, 900/4, 4, 8, 0.7);
+        var tree = new Tree(pageCanvas, pageCanvas.width / 10, pageCanvas.height / 8, 4, 8, 0.7);
         tree.draw();
         break;
       default:
