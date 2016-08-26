@@ -739,8 +739,26 @@ Tree.prototype.drawTree = function(level, angle, baseCenterX, baseCenterY, trunk
         pointX = (branchOutPoints[i - 1][0] + branchOutPoints[i][0]) / 2;
         pointY = (branchOutPoints[i - 1][1] + branchOutPoints[i][1]) / 2;
         this.drawTree(level - 1, angle + branchAngle - Math.PI / 2, pointX, pointY, newWidth, newHeight);
-      } else if (i !== this.branchFactor - 1) {
-        ctx.lineTo(branchOutPoints[i][0], branchOutPoints[i][1]);
+      } else {
+        if (i !== 0 && branchArray[i - 1]) {
+          for (var j = i + 1; j < this.branchFactor; j++) {
+            if (branchArray[j]) {
+              break;
+            }
+          }
+          if (j !== this.branchFactor) {
+            var leftBranchAngle = (4 / 3) * Math.PI - (5 / 3) * Math.PI * (i + 1 / 2) / this.branchFactor;
+            var rightBranchAngle = (4 / 3) * Math.PI - (5 / 3) * Math.PI * (j - 1 / 2) / this.branchFactor;
+            var midAngle = (leftBranchAngle + rightBranchAngle) / 2;
+            var midX = baseCenterX + Math.cos(midAngle) * (1 / 2) * trunkWidth;
+            var midY = baseCenterY - trunkHeight - ((Math.sqrt(3) / 2) * trunkWidth) - Math.sin(midAngle) * (1 / 2) * trunkWidth;
+            var rotatedMid = this.rotatePoint(midX, midY, baseCenterX, baseCenterY, angle);
+            ctx.lineTo(rotatedMid[0], rotatedMid[1]);
+          }
+        }
+        if (i !== this.branchFactor - 1 && branchArray[i + 1]) {
+          ctx.lineTo(branchOutPoints[i][0], branchOutPoints[i][1]);
+        }
       }
     }
     ctx.lineTo(rightTop[0], rightTop[1]);
