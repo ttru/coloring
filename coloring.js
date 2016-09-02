@@ -1012,10 +1012,11 @@ $(document).ready(function() {
         tree.draw();
         break;
       case "Flowerbed":
-        var flower = new Flower(pageCanvas, pageCanvas.width / 2, pageCanvas.height / 2, 100, 6, false, 0, true);
-        var flower2 = new Flower(pageCanvas, pageCanvas.width / 2 + 50, pageCanvas.height / 2 + 50, 100, 6, false, 0, true);
-        flower.draw();
-        flower2.draw();
+        for (var i = 0; i < 25; i++) {
+          var length = 25 + Math.random() * 75;
+          var flower = new Flower(pageCanvas, length + (pageCanvas.width - 2 * length) * Math.random(), length + (pageCanvas.height - 2 * length) * Math.random(), length);
+          flower.draw();
+        }
         break;
       default:
         testHappy();
