@@ -653,14 +653,6 @@ Tree.prototype = Object.create(Drawer.prototype);
 
 Tree.constructor = Tree;
 
-Tree.prototype.setContextParams = function() {
-  if (Drawer.prototype.setContextParams.call(this)) {
-    var ctx = this.canvas.getContext('2d');
-    return true;
-  }
-  return false;
-};
-
 Tree.prototype.draw = function() {
   if (this.setContextParams()) {
     var ctx = this.canvas.getContext('2d');
@@ -836,15 +828,7 @@ var Flower = function(canvas, centerX, centerY, petalLength, symmetry, petalSymm
 
 Flower.prototype = Object.create(Drawer.prototype);
 
-Flower.constructor = Tree;
-
-Flower.prototype.setContextParams = function() {
-  if (Drawer.prototype.setContextParams.call(this)) {
-    var ctx = this.canvas.getContext('2d');
-    return true;
-  }
-  return false;
-};
+Flower.constructor = Flower;
 
 Flower.prototype.drawScaledPetals = function(scale) {
   var ctx = this.canvas.getContext('2d');
@@ -934,6 +918,29 @@ Flower.prototype.draw = function() {
   }
 };
 
+var Flowerbed = function(canvas) {
+  this.canvas = canvas;
+};
+
+Flowerbed.prototype = Object.create(Drawer.prototype);
+
+Flowerbed.constructor = Flowerbed;
+
+Flowerbed.prototype.draw = function() {
+  var stripeHeight = this.canvas.height / 5;
+  var maxLength = stripeHeight / 2;
+  for (var row = 0; row < this.canvas.height / stripeHeight; row++) {
+    var x = Math.random() * maxLength - (row % 2) * maxLength;
+    while (x < this.canvas.width) {
+      var length = maxLength / 3 + (2 / 3) * maxLength * Math.random();
+      var y = length + (row * stripeHeight) + (stripeHeight - 2 * length) * Math.random();
+      var flower = new Flower(this.canvas, x, y, length);
+      flower.draw();
+      x += (2 * length + Math.random() * maxLength);
+    }
+  }
+};
+
 var testHappy = function() {
   var canvas = $("#coloring-page")[0];
   if (canvas.getContext) {
@@ -1012,11 +1019,8 @@ $(document).ready(function() {
         tree.draw();
         break;
       case "Flowerbed":
-        for (var i = 0; i < 25; i++) {
-          var length = 25 + Math.random() * 75;
-          var flower = new Flower(pageCanvas, length + (pageCanvas.width - 2 * length) * Math.random(), length + (pageCanvas.height - 2 * length) * Math.random(), length);
-          flower.draw();
-        }
+        var flowerbed = new Flowerbed(pageCanvas);
+        flowerbed.draw();
         break;
       default:
         testHappy();
