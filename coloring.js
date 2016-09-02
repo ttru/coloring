@@ -667,10 +667,15 @@ Tree.prototype.draw = function() {
     ctx.beginPath();
     var argsArray = [];
     ctx.moveTo(this.canvas.width / 2 - 2 * this.trunkWidth / 3, 2 * this.canvas.height / 3);
-    ctx.lineTo(this.canvas.width / 2 - this.trunkWidth / 2, this.canvas.height / 2);
+    var cpDistX = (Math.random() < 0.5) ? Math.random() * this.trunkWidth / 3 : - Math.random() * this.trunkWidth / 3;
+    var cpDistY = this.canvas.height / 6 * Math.random();
+    var leftCPX = this.canvas.width / 2 - 2 * this.trunkWidth / 3 + cpDistX;
+    var rightCPX = this.canvas.width / 2 + 2 * this.trunkWidth / 3 + cpDistX;
+    var cpY = 2 * this.canvas.height / 3 - cpDistY;
+    ctx.quadraticCurveTo(leftCPX, cpY, this.canvas.width / 2 - this.trunkWidth / 2, this.canvas.height / 2);
     this.drawTree(Math.min(3, this.levels), 0, this.canvas.width / 2, this.canvas.height / 2, this.trunkWidth, this.trunkHeight, argsArray);
-    ctx.lineTo(this.canvas.width / 2 + 2 * this.trunkWidth / 3, 2 * this.canvas.height / 3);
-    ctx.closePath();
+    ctx.quadraticCurveTo(rightCPX, cpY, this.canvas.width / 2 + 2 * this.trunkWidth / 3, 2 * this.canvas.height / 3);
+    //ctx.closePath();
     ctx.lineWidth = 4;
     ctx.stroke();
     ctx.save();
@@ -692,26 +697,53 @@ Tree.prototype.draw = function() {
     }
     ctx.stroke();
     ctx.restore();
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 4;
     for (var i = 0; i < argsArray.length; i++) {
       ctx.beginPath();
       ctx.moveTo(argsArray[i].baseCenterX - Math.cos(argsArray[i].angle) * argsArray[i].trunkWidth / 2, argsArray[i].baseCenterY + Math.sin(argsArray[i].angle) * argsArray[i].trunkWidth / 2)
       this.drawTree(this.levels - 3, argsArray[i].angle, argsArray[i].baseCenterX, argsArray[i].baseCenterY, argsArray[i].trunkWidth, argsArray[i].trunkHeight);
       ctx.closePath();
+      //ctx.fillStyle = "#FFFFFF";
       ctx.fill();
       ctx.stroke();
+    }
+    ctx.lineWidth = 3;
+    var grassHeight = this.canvas.height / 9;
+    var grassWidth = 30;
+    var topmostBase = 13 * this.canvas.height / 18;
+    var grassLevel = 0;
+    for (var currentBase = topmostBase; currentBase - grassHeight <= this.canvas.height; currentBase += grassHeight / 2, grassLevel++) {
+      var xOffset = (grassLevel % 2) * grassWidth / 2;
+      for (var x = xOffset; x <= this.canvas.width; x += grassWidth) {
+        var height = grassHeight + Math.random() * grassHeight / 3;
+        var tipX = x + grassWidth / 2;
+        var xDist = (Math.random() < 0.5) ? grassWidth * Math.random() : -grassWidth * Math.random();
+        var yDist = height * Math.random();
+        ctx.beginPath();
+        ctx.moveTo(x, currentBase);
+        ctx.quadraticCurveTo(x + xDist, currentBase - yDist, x + grassWidth / 2, currentBase - height);
+        ctx.quadraticCurveTo(x + grassWidth + xDist, currentBase - yDist, x + grassWidth, currentBase);
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+        ctx.stroke();
+      }
     }
   }
 }
 
 Tree.prototype.drawTree = function(level, angle, baseCenterX, baseCenterY, trunkWidth, trunkHeight, argsArray) {
   var ctx = this.canvas.getContext('2d');
+  var leftBase = this.rotatePoint(baseCenterX - trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
+  var rightBase = this.rotatePoint(baseCenterX + trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
+  var cpDistX = (Math.random() < 0.5) ? trunkWidth / 3 + Math.random() * trunkWidth / 3 : -trunkWidth / 3 - Math.random() * trunkWidth / 3;
+  var cpDistY = trunkHeight * Math.random();
+  var leftCP = this.rotatePoint(baseCenterX - trunkWidth / 2 + cpDistX, baseCenterY - cpDistY, baseCenterX, baseCenterY, angle);
+  var rightCP = this.rotatePoint(baseCenterX + trunkWidth / 2 + cpDistX, baseCenterY - cpDistY, baseCenterX, baseCenterY, angle);
   if (level === 0) {
-    var leftBase = this.rotatePoint(baseCenterX - trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
-    var rightBase = this.rotatePoint(baseCenterX + trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
     var tip = this.rotatePoint(baseCenterX, baseCenterY - trunkHeight, baseCenterX, baseCenterY, angle);
-    ctx.lineTo(tip[0], tip[1]);
-    ctx.lineTo(rightBase[0], rightBase[1]);
+    ctx.quadraticCurveTo(leftCP[0], leftCP[1], tip[0], tip[1]);
+    ctx.quadraticCurveTo(rightCP[0], rightCP[1], rightBase[0], rightBase[1]);
     if (argsArray) {
       argsArray.push({
         "angle": angle,
@@ -722,8 +754,6 @@ Tree.prototype.drawTree = function(level, angle, baseCenterX, baseCenterY, trunk
       });
     }
   } else {
-    var leftBase = this.rotatePoint(baseCenterX - trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
-    var rightBase = this.rotatePoint(baseCenterX + trunkWidth / 2, baseCenterY, baseCenterX, baseCenterY, angle);
     var leftTop = this.rotatePoint(baseCenterX - trunkWidth / 2, baseCenterY - trunkHeight, baseCenterX, baseCenterY, angle);
     var rightTop = this.rotatePoint(baseCenterX + trunkWidth / 2, baseCenterY - trunkHeight, baseCenterX, baseCenterY, angle);
     var branchOutPoints = new Array(this.branchFactor - 1);
@@ -741,11 +771,7 @@ Tree.prototype.drawTree = function(level, angle, baseCenterX, baseCenterY, trunk
         branchArray[i] = (Math.random() < this.branchProbability);
       }
     }
-    ctx.lineTo(leftTop[0], leftTop[1]);
-    //ctx.globalCompositeOperation = "destination-out";
-    //ctx.fill();
-    // ctx.globalCompositeOperation = "source-over";
-    //ctx.stroke();
+    ctx.quadraticCurveTo(leftCP[0], leftCP[1], leftTop[0], leftTop[1]);
     var newWidth = 2 * trunkWidth * Math.sin((5 / 3) * Math.PI / (2 * this.branchFactor));
     var newHeight = trunkHeight * (newWidth / trunkWidth);
     for (var i = 0; i < this.branchFactor; i++) {
@@ -778,7 +804,7 @@ Tree.prototype.drawTree = function(level, angle, baseCenterX, baseCenterY, trunk
       }
     }
     ctx.lineTo(rightTop[0], rightTop[1]);
-    ctx.lineTo(rightBase[0], rightBase[1]);
+    ctx.quadraticCurveTo(rightCP[0], rightCP[1], rightBase[0], rightBase[1]);
   }
 }
 
