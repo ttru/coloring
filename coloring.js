@@ -808,6 +808,132 @@ Tree.prototype.drawTree = function(level, angle, baseCenterX, baseCenterY, trunk
   }
 }
 
+var Flower = function(canvas, centerX, centerY, petalLength, symmetry, petalSymmetry, angleOffset, borderedPetals) {
+  Drawer.call(this, canvas);
+  this.centerX = centerX;
+  this.centerY = centerY;
+  this.petalLength = petalLength;
+  this.symmetry = (typeof symmetry != 'undefined') ? symmetry : ((Math.random() < 0.5) ? 5 : 6);
+  this.petalSymmetry = (typeof petalSymmetry != 'undefined') ? petalSymmetry : (Math.random() < 0.5);
+  this.angleOffset = (typeof angleOffset != 'undefined') ? angleOffset : (Math.random() * 2 * Math.PI);
+  this.borderedPetals = (typeof borderedPetals != 'undefined') ? borderedPetals : Math.random() < 0.5;
+  this.petalAngle = 2 * Math.PI / this.symmetry;
+  this.circleRadius = this.petalLength / 4;
+  this.borderScaleFactor = 0.8;
+  if (this.petalSymmetry) {
+    this.cpAngleOffset = Math.random() * this.petalAngle / 2;
+    this.cpRadius = this.circleRadius + (3 / 2) * Math.random() * this.petalLength;
+    this.centerLine = Math.random() < 0.5;
+    var centerLineDev = Math.random() * this.circleRadius * ((this.borderedPetals) ? 1 : this.borderScaleFactor);
+    this.centerLineRadius = (3 / 2) * this.circleRadius + centerLineDev;
+  } else {
+    this.leftCPAngleOffset = Math.random() * this.petalAngle / 2;
+    this.leftCPRadius = this.circleRadius + (3 / 2) * Math.random() * this.petalLength;
+    this.rightCPAngleOffset = Math.random() * this.petalAngle / 2;
+    this.rightCPRadius = this.circleRadius + (3 / 2) * Math.random() * this.petalLength;
+  }
+};
+
+Flower.prototype = Object.create(Drawer.prototype);
+
+Flower.constructor = Tree;
+
+Flower.prototype.setContextParams = function() {
+  if (Drawer.prototype.setContextParams.call(this)) {
+    var ctx = this.canvas.getContext('2d');
+    return true;
+  }
+  return false;
+};
+
+Flower.prototype.drawScaledPetals = function(scale) {
+  var ctx = this.canvas.getContext('2d');
+  var scaledPetalLength = this.petalLength * scale;
+  for (var i = 0; i < this.symmetry; i++) {
+    var centralAngle = this.angleOffset + this.petalAngle * i;
+    var leftAngle = centralAngle - this.petalAngle / 2;
+    var rightAngle = centralAngle + this.petalAngle / 2;
+    var centralStartX = this.centerX + Math.cos(centralAngle) * this.circleRadius;
+    var centralStartY = this.centerY - Math.sin(centralAngle) * this.circleRadius;
+    var leftStartX = this.centerX + Math.cos(leftAngle) * this.circleRadius;
+    var leftStartY = this.centerY - Math.sin(leftAngle) * this.circleRadius;
+    var rightStartX = this.centerX + Math.cos(rightAngle) * this.circleRadius;
+    var rightStartY = this.centerY - Math.sin(rightAngle) * this.circleRadius;
+    var leftTipX = this.centerX + Math.cos(leftAngle) * scaledPetalLength;
+    var leftTipY = this.centerY - Math.sin(leftAngle) * scaledPetalLength;
+    var rightTipX = this.centerX + Math.cos(rightAngle) * scaledPetalLength;
+    var rightTipY = this.centerY - Math.sin(rightAngle) * scaledPetalLength;
+    var tipX = this.centerX + Math.cos(centralAngle) * scaledPetalLength;
+    var tipY = this.centerY - Math.sin(centralAngle) * scaledPetalLength;
+    if (this.petalSymmetry) {
+      var leftCPAngle = centralAngle - this.cpAngleOffset;
+      var rightCPAngle = centralAngle + this.cpAngleOffset;
+      var leftCPX = this.centerX + Math.cos(leftCPAngle) * scale * this.cpRadius;
+      var leftCPY = this.centerY - Math.sin(leftCPAngle) * scale * this.cpRadius;
+      var rightCPX = this.centerX + Math.cos(rightCPAngle) * scale * this.cpRadius;
+      var rightCPY = this.centerY - Math.sin(rightCPAngle) * scale * this.cpRadius;
+      ctx.beginPath();
+      ctx.moveTo(this.centerX, this.centerY);
+      ctx.lineTo(this.leftStartX, this.leftStartY);
+      ctx.bezierCurveTo(leftTipX, leftTipY, leftCPX, leftCPY, tipX, tipY);
+      ctx.bezierCurveTo(rightCPX, rightCPY, rightTipX, rightTipY, rightStartX, rightStartY);
+      ctx.lineTo(this.rightStartX, this.rightStartY);
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.stroke();
+    } else {
+      var leftCPAngle = centralAngle - this.leftCPAngleOffset;
+      var rightCPAngle = centralAngle + this.rightCPAngleOffset;
+      var leftCPX = this.centerX + Math.cos(leftCPAngle) * scale * this.leftCPRadius;
+      var leftCPY = this.centerY - Math.sin(leftCPAngle) * scale * this.leftCPRadius;
+      var rightCPX = this.centerX + Math.cos(rightCPAngle) * scale * this.rightCPRadius;
+      var rightCPY = this.centerY - Math.sin(rightCPAngle) * scale * this.rightCPRadius;
+      ctx.beginPath();
+      ctx.moveTo(leftStartX, leftStartY);
+      ctx.bezierCurveTo(leftTipX, leftTipY, leftCPX, leftCPY, tipX, tipY);
+      ctx.bezierCurveTo(rightCPX, rightCPY, rightTipX, rightTipY, rightStartX, rightStartY);
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.stroke();
+    }
+  }
+};
+
+Flower.prototype.draw = function() {
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+
+    this.drawScaledPetals(1);
+    if (this.borderedPetals) {
+      this.drawScaledPetals(this.borderScaleFactor);
+    }
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, this.circleRadius, 0, 2 * Math.PI);
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.stroke();
+
+    for (var i = 0; i < this.symmetry; i++) {
+      var centralAngle = this.angleOffset + this.petalAngle * i;
+      if (this.centerLine) {
+        var centralStartX = this.centerX + Math.cos(centralAngle) * this.circleRadius;
+        var centralStartY = this.centerY - Math.sin(centralAngle) * this.circleRadius;
+        var scaledCenterLineRadius = this.centerLineRadius;
+        var centralLineEndX = this.centerX + Math.cos(centralAngle) * this.centerLineRadius;
+        var centralLineEndY = this.centerY - Math.sin(centralAngle) * this.centerLineRadius;
+        ctx.beginPath();
+        ctx.moveTo(centralStartX, centralStartY);
+        ctx.lineTo(centralLineEndX, centralLineEndY);
+        ctx.stroke();
+      }
+    }
+
+  }
+};
+
 var testHappy = function() {
   var canvas = $("#coloring-page")[0];
   if (canvas.getContext) {
@@ -884,6 +1010,12 @@ $(document).ready(function() {
       case "Trees":
         var tree = new Tree(pageCanvas, pageCanvas.width / 10, pageCanvas.height / 8, 5, 8, 0.7);
         tree.draw();
+        break;
+      case "Flowerbed":
+        var flower = new Flower(pageCanvas, pageCanvas.width / 2, pageCanvas.height / 2, 100, 6, false, 0, true);
+        var flower2 = new Flower(pageCanvas, pageCanvas.width / 2 + 50, pageCanvas.height / 2 + 50, 100, 6, false, 0, true);
+        flower.draw();
+        flower2.draw();
         break;
       default:
         testHappy();
