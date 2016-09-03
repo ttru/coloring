@@ -941,6 +941,194 @@ Flowerbed.prototype.draw = function() {
   }
 };
 
+var Book = function(canvas, baseX, baseY, bookWidth, bookHeight, angle, shelfHeight) {
+  this.canvas = canvas;
+  this.baseX = (angle >= 0) ? baseX : baseX + Math.abs(bookHeight * Math.sin(angle));
+  this.baseY = baseY;
+  this.bookWidth = bookWidth;
+  this.bookHeight = bookHeight;
+  this.angle = angle;
+  this.originX = (this.angle >= 0) ? this.baseX + this.bookWidth : this.baseX;
+  this.originY = this.baseY;
+}
+
+Book.prototype = Object.create(Drawer.prototype);
+
+Book.constructor = Book;
+
+Book.prototype.draw = function() {
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+    var leftBase = this.rotatePoint(this.baseX, this.baseY, this.originX, this.originY, -this.angle);
+    var rightBase = this.rotatePoint(this.baseX + this.bookWidth, this.baseY, this.originX, this.originY, -this.angle);
+    var leftTop = this.rotatePoint(this.baseX, this.baseY - this.bookHeight, this.originX, this.originY, -this.angle);
+    var rightTop = this.rotatePoint(this.baseX + this.bookWidth, this.baseY - this.bookHeight, this.originX, this.originY, -this.angle);
+    ctx.beginPath();
+    ctx.moveTo(leftBase[0], leftBase[1]);
+    ctx.lineTo(leftTop[0], leftTop[1]);
+    ctx.lineTo(rightTop[0], rightTop[1]);
+    ctx.lineTo(rightBase[0], rightBase[1]);
+    ctx.closePath();
+    ctx.stroke();
+    this.drawStyle();
+  }
+};
+
+Book.prototype.drawStyle = function() {
+  var styles = Array(10).fill("plain");
+  styles[0] = "line";
+  styles[1] = "doubleline";
+  styles[2] = "square";
+  var style = styles[Math.floor(Math.random() * styles.length)];
+  switch (style) {
+    case "line":
+      var numLines = Math.floor(Math.random() * 4) + 1;
+      this.drawLines(numLines);
+      break;
+    case "doubleline":
+      var numLines = Math.floor(Math.random() * 4) + 1;
+      this.drawDoubleLines(numLines);
+      break;
+    case "square":
+      this.drawSquare();
+      break;
+  }
+};
+
+Book.prototype.drawLines = function(numLines) {
+  var ctx = this.canvas.getContext('2d');
+  var symmetry = Math.random() < 0.5;
+  if (symmetry) {
+    var width = this.bookHeight / numLines;
+    for (var i = 1; i < numLines; i++) {
+      var y = this.baseY - this.bookHeight + width * i;
+      var left = this.rotatePoint(this.baseX, y, this.originX, this.originY, -this.angle);
+      var right = this.rotatePoint(this.baseX + this.bookWidth, y, this.originX, this.originY, -this.angle);
+      var oldWidth = ctx.lineWidth;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(left[0], left[1]);
+      ctx.lineTo(right[0], right[1]);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.lineWidth = oldWidth;
+    }
+  } else {
+    var maxWidth = this.bookHeight / numLines;
+    var lastY = this.baseY - this.bookHeight;
+    for (var i = 1; i < numLines; i++) {
+      var width = (0.5 + 0.5 * Math.random()) * maxWidth;
+      var y = lastY + width;
+      var left = this.rotatePoint(this.baseX, y, this.originX, this.originY, -this.angle);
+      var right = this.rotatePoint(this.baseX + this.bookWidth, y, this.originX, this.originY, -this.angle);
+      var oldWidth = ctx.lineWidth;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(left[0], left[1]);
+      ctx.lineTo(right[0], right[1]);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.lineWidth = oldWidth;
+    }
+  }
+};
+
+Book.prototype.drawDoubleLines = function(numLines) {
+  var ctx = this.canvas.getContext('2d');
+  var width = this.bookHeight / numLines;
+  var lineGap = this.bookHeight / 20;
+  for (var i = 1; i < numLines; i++) {
+    var y = this.baseY - this.bookHeight + width * i;
+    var leftTop = this.rotatePoint(this.baseX, y - lineGap / 2, this.originX, this.originY, -this.angle);
+    var rightTop = this.rotatePoint(this.baseX + this.bookWidth, y - lineGap / 2, this.originX, this.originY, -this.angle);
+    var leftBottom = this.rotatePoint(this.baseX, y + lineGap / 2, this.originX, this.originY, -this.angle);
+    var rightBottom = this.rotatePoint(this.baseX + this.bookWidth, y + lineGap / 2, this.originX, this.originY, -this.angle);
+    var oldWidth = ctx.lineWidth;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(leftTop[0], leftTop[1]);
+    ctx.lineTo(rightTop[0], rightTop[1]);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.moveTo(leftBottom[0], leftBottom[1]);
+    ctx.lineTo(rightBottom[0], rightBottom[1]);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.lineWidth = oldWidth;
+  }
+};
+
+Book.prototype.drawSquare = function() {
+  var topGap = this.bookHeight / 6 + Math.random() * this.bookHeight / 12;
+  var sideGap = this.bookWidth / 6 + Math.random() * this.bookWidth / 6;
+  var height = this.bookHeight / 6 + Math.random() * this.bookHeight / 12;
+  var bottomLeft = this.rotatePoint(this.baseX + sideGap, this.baseY - this.bookHeight + topGap + height, this.originX, this.originY, -this.angle);
+  var bottomRight = this.rotatePoint(this.baseX + this.bookWidth - sideGap, this.baseY - this.bookHeight + topGap + height, this.originX, this.originY, -this.angle);
+  var topLeft = this.rotatePoint(this.baseX + sideGap, this.baseY - this.bookHeight + topGap, this.originX, this.originY, -this.angle);
+  var topRight = this.rotatePoint(this.baseX + this.bookWidth - sideGap, this.baseY - this.bookHeight + topGap, this.originX, this.originY, -this.angle);
+  var ctx = this.canvas.getContext('2d');
+  ctx.beginPath();
+  var oldWidth = ctx.lineWidth;
+  ctx.lineWidth = 2;
+  ctx.moveTo(bottomLeft[0], bottomLeft[1]);
+  ctx.lineTo(topLeft[0], topLeft[1]);
+  ctx.lineTo(topRight[0], topRight[1]);
+  ctx.lineTo(bottomRight[0], bottomRight[1]);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.lineWidth = oldWidth;
+}
+
+var Bookshelf = function(canvas, numShelves, shelfThickness) {
+  this.canvas = canvas;
+  this.numShelves = numShelves;
+  this.shelfThickness = shelfThickness;
+  this.shelfHeight = (this.canvas.height - (this.numShelves + 1) * this.shelfThickness) / this.numShelves;
+};
+
+Bookshelf.prototype = Object.create(Drawer.prototype);
+
+Bookshelf.constructor = Bookshelf;
+
+Bookshelf.prototype.draw = function() {
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.moveTo(0, this.shelfThickness);
+    ctx.lineTo(this.canvas.width, this.shelfThickness);
+    ctx.stroke();
+    for (var i = 0; i < this.numShelves; i++) {
+      var shelfBaseY = (this.shelfThickness + this.shelfHeight) * (i + 1);
+      var currentX = -this.canvas.width / 80;
+      var prevAngle = 0;
+      var prevHeight = 0;
+      while (currentX < this.canvas.width) {
+        var bookRatio = 3 + Math.random() * 7;
+        var bookHeight = (0.5 + Math.random() * 0.5) * this.shelfHeight;
+        var bookWidth = bookHeight / bookRatio;
+        var angle = 0;
+        if (prevAngle === 0 && prevHeight >= bookHeight) {
+          angle = (Math.random() < 0.9) ? 0 : -Math.PI / 16 + Math.random() * Math.PI / 8;
+        }
+        if (prevAngle !== 0 && prevHeight >= bookHeight) {
+          bookHeight = prevHeight + Math.random() * (this.shelfHeight - prevHeight);
+        }
+        var book = new Book(this.canvas, currentX, shelfBaseY, bookWidth, bookHeight, angle, this.shelfHeight);
+        book.draw();
+        currentX += Math.abs(bookHeight * Math.sin(angle)) + Math.abs(bookWidth * Math.cos(angle));
+        prevAngle = angle;
+        prevHeight = bookHeight;
+      }
+      ctx.beginPath();
+      ctx.moveTo(0, shelfBaseY);
+      ctx.lineTo(this.canvas.width, shelfBaseY);
+      ctx.moveTo(0, shelfBaseY + this.shelfThickness);
+      ctx.lineTo(this.canvas.width, shelfBaseY + this.shelfThickness);
+      ctx.stroke();
+    }
+  }
+}
+
 var testHappy = function() {
   var canvas = $("#coloring-page")[0];
   if (canvas.getContext) {
@@ -1021,6 +1209,10 @@ $(document).ready(function() {
       case "Flowerbed":
         var flowerbed = new Flowerbed(pageCanvas);
         flowerbed.draw();
+        break;
+      case "Bookshelf":
+        var bookshelf = new Bookshelf(pageCanvas, 6, pageCanvas.height / 60);
+        bookshelf.draw();
         break;
       default:
         testHappy();
