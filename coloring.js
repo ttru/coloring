@@ -1129,6 +1129,94 @@ Bookshelf.prototype.draw = function() {
   }
 }
 
+var Sunset = function(canvas) {
+  this.canvas = canvas;
+};
+
+Sunset.prototype = Object.create(Drawer.prototype);
+
+Sunset.constructor = Sunset;
+
+Sunset.prototype.draw = function() {
+  var centerX = this.canvas.width / 2;
+  var centerY = this.canvas.height / 2;
+  var startRadius = Math.min(this.canvas.width, this.canvas.height) / 3 + 10;
+  var diagonalLength = Math.sqrt(Math.pow(this.canvas.width, 2) + Math.pow(this.canvas.height, 2));
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+    ctx.lineWidth = 2;
+    var angleWidth = Math.PI / 36;
+    for (var i = 1; i < 9; i++) {
+      var angle = Math.PI * i / 9;
+      var startX = centerX + Math.cos(angle) * startRadius;
+      var startY = centerY - Math.sin(angle) * startRadius;
+      var pt1StartX = centerX + Math.cos(angle - angleWidth / 2) * Math.min(this.canvas.width, this.canvas.height) / 3;
+      var pt1StartY = centerY - Math.sin(angle - angleWidth / 2) * Math.min(this.canvas.width, this.canvas.height) / 3;
+      var pt1X = centerX + Math.cos(angle - angleWidth / 2) * diagonalLength;
+      var pt1Y = centerY - Math.sin(angle - angleWidth / 2) * diagonalLength;
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(pt1X, pt1Y);
+      ctx.stroke();
+      var pt2StartX = centerX + Math.cos(angle + angleWidth / 2) * Math.min(this.canvas.width, this.canvas.height) / 3;
+      var pt2StartY = centerY - Math.sin(angle + angleWidth / 2) * Math.min(this.canvas.width, this.canvas.height) / 3;
+      var pt2X = centerX + Math.cos(angle + angleWidth / 2) * diagonalLength;
+      var pt2Y = centerY - Math.sin(angle + angleWidth / 2) * diagonalLength;
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(pt2X, pt2Y);
+      ctx.stroke();
+    }
+  }
+  var sunRadius = Math.min(this.canvas.width, this.canvas.height) / 3;
+  var sun = new Sun(this.canvas, 4, centerX, centerY, sunRadius);
+  sun.draw();
+  if (this.setContextParams()) {
+    ctx.lineWidth = 5;
+    var ctx = this.canvas.getContext('2d');
+    var amplitude = this.canvas.height / 30;
+    var numWaves = 3;
+    var wavelength = this.canvas.width / numWaves;
+    var peakY = this.canvas.height / 2;
+    var troughY = peakY + amplitude;
+    var level = 0;
+    while (peakY < this.canvas.height) {
+      // TODO: Draw wave
+      ctx.beginPath();
+      ctx.moveTo(-10, this.canvas.height + 10);
+      var startX = 0;
+      var noise = wavelength / 10;
+      for (var i = 0; i < numWaves + 1; i++) {
+        var idealStartX = i * wavelength;
+        if (level % 2 === 1) {
+          idealStartX -= wavelength / 2;
+        }
+        var endX = idealStartX + wavelength + (1 - Math.random()) * noise;
+        if (level % 2 === 0 && i === numWaves - 1) {
+          endX = this.canvas.width;
+        }
+        var randWavelength = endX - idealStartX;
+        var cp1X = idealStartX + randWavelength / 8 + Math.random() * randWavelength / 4;
+        var cp2X = endX - (randWavelength / 8 + Math.random() * randWavelength / 4);
+        if (i === 0) {
+          ctx.lineTo(startX, peakY);
+        }
+        ctx.bezierCurveTo(cp1X, troughY, cp2X, troughY, endX, peakY);
+        startX = endX;
+      }
+      ctx.lineTo(this.canvas.width + 10, this.canvas.height + 10);
+      ctx.closePath();
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.stroke();
+      peakY += (amplitude / 2);
+      troughY += (amplitude / 2);
+      level++;
+    }
+  }
+}
+
 var testHappy = function() {
   var canvas = $("#coloring-page")[0];
   if (canvas.getContext) {
@@ -1213,6 +1301,10 @@ $(document).ready(function() {
       case "Bookshelf":
         var bookshelf = new Bookshelf(pageCanvas, 6, pageCanvas.height / 60);
         bookshelf.draw();
+        break;
+      case "Sunset":
+        var sunset = new Sunset(pageCanvas);
+        sunset.draw();
         break;
       default:
         testHappy();
