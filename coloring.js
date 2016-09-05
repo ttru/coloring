@@ -157,31 +157,6 @@ Ring.prototype.drawTriangleLayer = function(layer) {
   }
 }
 
-// Ring.prototype.drawTriangleLayer = function(layer) {
-//   if (this.setContextParams()) {
-//     var ctx = this.canvas.getContext('2d');
-//     var numTriangles = 4 * this.symmetry;
-//     var angleInterval = 2 * Math.PI / numTriangles;
-//     var startAngle = (layer % 2) * angleInterval / 2;
-//     var baseRadius = (layer - 0.5) * this.unitLength;
-//     var tipRadius = (layer + 0.5) * this.unitLength - ctx.lineWidth / 2;
-//     for (var i = 0; i < numTriangles; i++) {
-//       var angle = startAngle + i * angleInterval;
-//       var firstX = Math.cos(angle) * baseRadius + this.centerX;
-//       var firstY = Math.sin(angle) * baseRadius + this.centerY;
-//       var secondX = Math.cos(angle + angleInterval) * baseRadius + this.centerX;
-//       var secondY = Math.sin(angle + angleInterval) * baseRadius + this.centerY;
-//       var tipX = Math.cos(angle + angleInterval / 2) * tipRadius + this.centerX;
-//       var tipY = Math.sin(angle + angleInterval / 2) * tipRadius + this.centerY;
-//       ctx.beginPath();
-//       ctx.moveTo(firstX, firstY);
-//       ctx.lineTo(tipX, tipY);
-//       ctx.lineTo(secondX, secondY);
-//       ctx.stroke();
-//     }
-//   }
-// }
-
 Ring.prototype.drawSemicircleLayer = function(layer) {
   if (this.setContextParams()) {
     var ctx = this.canvas.getContext('2d');
@@ -1217,6 +1192,164 @@ Sunset.prototype.draw = function() {
   }
 }
 
+var AltRing = function(canvas, numLayers, fillCanvas, centerX, centerY, radius) {
+  Ring.call(this, canvas, numLayers, fillCanvas, centerX, centerY, radius);
+};
+
+AltRing.prototype = Object.create(Ring.prototype);
+
+AltRing.prototype.constructor = Ring;
+
+AltRing.prototype.draw = function() {
+  this.drawDivider(2);
+  var rand = Math.random();
+  if (rand < 1 / 3) {
+    this.drawQuads(false);
+  } else if (rand < 2 / 3) {
+    this.drawBeziers(false);
+  } else {
+    this.drawTriangles();
+  }
+};
+
+AltRing.prototype.drawQuads = function(symmetrical) {
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+    var numTriangles = 4 * this.symmetry;
+    var angleInterval = 2 * Math.PI / numTriangles;
+    var firstCPAngleOffset = Math.random() * angleInterval / 2;
+    var firstCPRadiusOffset = Math.random();
+    if (symmetrical) {
+      var secondCPAngleOffset = angleInterval - firstCPAngleOffset;
+      var secondCPRadiusOffset = firstCPRadius;
+    } else {
+      var secondCPAngleOffset = (1 + Math.random()) * angleInterval / 2;
+      var secondCPRadiusOffset = Math.random();
+    }
+
+    for (var layer = 2; layer <= this.numLayers; layer++) {
+      var startAngle = (layer % 2) * angleInterval / 2;
+      var baseRadius = (layer - 0.5) * this.unitLength;
+      var tipRadius = (layer + 0.5) * this.unitLength - ctx.lineWidth / 2;
+      for (var i = 0; i < numTriangles; i++) {
+        var angle = startAngle + i * angleInterval;
+        var firstX = Math.cos(angle) * baseRadius + this.centerX;
+        var firstY = Math.sin(angle) * baseRadius + this.centerY;
+        var secondX = Math.cos(angle + angleInterval) * baseRadius + this.centerX;
+        var secondY = Math.sin(angle + angleInterval) * baseRadius + this.centerY;
+        var tipX = Math.cos(angle + angleInterval / 2) * tipRadius + this.centerX;
+        var tipY = Math.sin(angle + angleInterval / 2) * tipRadius + this.centerY;
+
+        var firstCPAngle = angle + firstCPAngleOffset;
+        var firstCPRadius = baseRadius + firstCPRadiusOffset * (tipRadius - baseRadius);
+        var firstCPX = Math.cos(firstCPAngle) * firstCPRadius + this.centerX;
+        var firstCPY = Math.sin(firstCPAngle) * firstCPRadius + this.centerY;
+
+        var secondCPAngle = angle + secondCPAngleOffset;
+        var secondCPRadius = baseRadius + secondCPRadiusOffset * (tipRadius - baseRadius);
+        var secondCPX = Math.cos(secondCPAngle) * secondCPRadius + this.centerX;
+        var secondCPY = Math.sin(secondCPAngle) * secondCPRadius + this.centerY;
+
+        ctx.beginPath();
+        ctx.moveTo(firstX, firstY);
+        ctx.quadraticCurveTo(firstCPX, firstCPY, tipX, tipY);
+        ctx.quadraticCurveTo(secondCPX, secondCPY, secondX, secondY);
+        ctx.stroke();
+      }
+    }
+  }
+};
+
+AltRing.prototype.drawBeziers = function(symmetrical) {
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+    var numTriangles = 4 * this.symmetry;
+    var angleInterval = 2 * Math.PI / numTriangles;
+    var firstCPAngleOffset = Math.random() * angleInterval / 2;
+    var firstCPRadiusOffset = Math.random();
+    var secondCPAngleOffset = Math.random() * angleInterval / 2;
+    var secondCPRadiusOffset = Math.random();
+    if (symmetrical) {
+      var thirdCPAngleOffset = angleInterval - secondCPAngleOffset;
+      var thirdCPRadiusOffset = secondCPRadiusOffset;
+      var fourthCPAngleOffset = angleInterval - firstCPAngleOffset;
+      var fourthCPRadiusOffset = firstCPRadiusOffset;
+    } else {
+      var thirdCPAngleOffset = (1 + Math.random()) * angleInterval / 2;
+      var thirdCPRadiusOffset = Math.random();
+      var fourthCPAngleOffset = (1 + Math.random()) * angleInterval / 2;
+      var fourthCPRadiusOffset = Math.random();
+    }
+    for (var layer = 2; layer <= this.numLayers; layer++) {
+      var startAngle = (layer % 2) * angleInterval / 2;
+      var baseRadius = (layer - 0.5) * this.unitLength;
+      var tipRadius = (layer + 0.5) * this.unitLength - ctx.lineWidth / 2;
+      for (var i = 0; i < numTriangles; i++) {
+        var angle = startAngle + i * angleInterval;
+        var firstX = Math.cos(angle) * baseRadius + this.centerX;
+        var firstY = Math.sin(angle) * baseRadius + this.centerY;
+        var secondX = Math.cos(angle + angleInterval) * baseRadius + this.centerX;
+        var secondY = Math.sin(angle + angleInterval) * baseRadius + this.centerY;
+        var tipX = Math.cos(angle + angleInterval / 2) * tipRadius + this.centerX;
+        var tipY = Math.sin(angle + angleInterval / 2) * tipRadius + this.centerY;
+
+        var firstCPAngle = angle + firstCPAngleOffset;
+        var firstCPRadius = baseRadius + firstCPRadiusOffset * (tipRadius - baseRadius);
+        var firstCPX = Math.cos(firstCPAngle) * firstCPRadius + this.centerX;
+        var firstCPY = Math.sin(firstCPAngle) * firstCPRadius + this.centerY;
+
+        var secondCPAngle = angle + secondCPAngleOffset;
+        var secondCPRadius = baseRadius + secondCPRadiusOffset * (tipRadius - baseRadius);
+        var secondCPX = Math.cos(secondCPAngle) * secondCPRadius + this.centerX;
+        var secondCPY = Math.sin(secondCPAngle) * secondCPRadius + this.centerY;
+
+        var thirdCPAngle = angle + thirdCPAngleOffset;
+        var thirdCPRadius = baseRadius + thirdCPRadiusOffset * (tipRadius - baseRadius);
+        var thirdCPX = Math.cos(thirdCPAngle) * thirdCPRadius + this.centerX;
+        var thirdCPY = Math.sin(thirdCPAngle) * thirdCPRadius + this.centerY;
+
+        var fourthCPAngle = angle + fourthCPAngleOffset;
+        var fourthCPRadius = baseRadius + fourthCPRadiusOffset * (tipRadius - baseRadius);
+        var fourthCPX = Math.cos(fourthCPAngle) * fourthCPRadius + this.centerX;
+        var fourthCPY = Math.sin(fourthCPAngle) * fourthCPRadius + this.centerY;
+
+        ctx.beginPath();
+        ctx.moveTo(firstX, firstY);
+        ctx.bezierCurveTo(firstCPX, firstCPY, secondCPX, secondCPY, tipX, tipY);
+        ctx.bezierCurveTo(thirdCPX, thirdCPY, fourthCPX, fourthCPY, secondX, secondY);
+        ctx.stroke();
+      }
+    }
+  }
+};
+
+AltRing.prototype.drawTriangles = function() {
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+    var numTriangles = 4 * this.symmetry;
+    var angleInterval = 2 * Math.PI / numTriangles;
+    for (var layer = 2; layer <= this.numLayers; layer++) {
+      var startAngle = (layer % 2) * angleInterval / 2;
+      var baseRadius = (layer - 0.5) * this.unitLength;
+      var tipRadius = (layer + 0.5) * this.unitLength - ctx.lineWidth / 2;
+      for (var i = 0; i < numTriangles; i++) {
+        var angle = startAngle + i * angleInterval;
+        var firstX = Math.cos(angle) * baseRadius + this.centerX;
+        var firstY = Math.sin(angle) * baseRadius + this.centerY;
+        var secondX = Math.cos(angle + angleInterval) * baseRadius + this.centerX;
+        var secondY = Math.sin(angle + angleInterval) * baseRadius + this.centerY;
+        var tipX = Math.cos(angle + angleInterval / 2) * tipRadius + this.centerX;
+        var tipY = Math.sin(angle + angleInterval / 2) * tipRadius + this.centerY;
+        ctx.beginPath();
+        ctx.moveTo(firstX, firstY);
+        ctx.lineTo(tipX, tipY);
+        ctx.lineTo(secondX, secondY);
+        ctx.stroke();
+      }
+    }
+  }
+};
+
 var testHappy = function() {
   var canvas = $("#coloring-page")[0];
   if (canvas.getContext) {
@@ -1305,6 +1438,10 @@ $(document).ready(function() {
       case "Sunset":
         var sunset = new Sunset(pageCanvas);
         sunset.draw();
+        break;
+      case "Double Spiral":
+        var altRing = new AltRing(pageCanvas, 15, true);
+        altRing.draw();
         break;
       default:
         testHappy();
