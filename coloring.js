@@ -905,7 +905,7 @@ Flowerbed.prototype.draw = function() {
   var stripeHeight = this.canvas.height / 5;
   var maxLength = stripeHeight / 2;
   for (var row = 0; row < this.canvas.height / stripeHeight; row++) {
-    var x = Math.random() * maxLength + (row % 2) * maxLength;
+    var x = Math.random() * (maxLength + (row % 2) * maxLength);
     while (x < this.canvas.width) {
       var length = maxLength / 3 + (2 / 3) * maxLength * Math.random();
       var y = length + (row * stripeHeight) + (stripeHeight - 2 * length) * Math.random();
