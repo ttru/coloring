@@ -1350,6 +1350,187 @@ AltRing.prototype.drawTriangles = function() {
   }
 };
 
+var Fish = function(canvas, x, y, width, height, facingLeft) {
+  Drawer.call(this, canvas);
+  this.x = x;
+  this.y = y;
+  this.width = width;
+  this.height = height;
+  this.facingLeft = facingLeft;
+};
+
+Fish.prototype = Object.create(Drawer.prototype);
+
+Fish.prototype.constructor = Fish;
+
+Fish.prototype.adjustX = function(x) {
+  if (this.facingLeft) {
+    return x;
+  } else {
+    return this.x + this.width - (x - this.x);
+  }
+};
+
+Fish.prototype.draw = function() {
+  if (this.setContextParams()) {
+    var noseX = this.x;
+    var noseY = this.y + this.height / 2;
+    var finX = this.x + 3 * this.width / 4;
+    var finTopY = this.y + 5 * this.height / 12;
+    var finBottomY = this.y + 7 * this.height / 12;
+    var cpX = this.x + this.width / 4;
+    var cpTopY = this.y;
+    var cpBottomY = this.y + this.height;
+    var ctx = this.canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.moveTo(this.adjustX(noseX), noseY);
+    ctx.quadraticCurveTo(this.adjustX(cpX), cpTopY, this.adjustX(finX), finTopY);
+    this.drawTail(ctx);
+    ctx.quadraticCurveTo(this.adjustX(cpX), cpBottomY, this.adjustX(noseX), noseY);
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.stroke();
+  }
+};
+
+Fish.prototype.drawTail = function(ctx) {
+  var finX = this.x + 3 * this.width / 4;
+  var finTopY = this.y + 5 * this.height / 12;
+  var finBottomY = this.y + 7 * this.height / 12;
+  var choice = Math.random();
+  var endTopY = this.y + this.height / 6;
+  var endBottomY = this.y + 5 * this.height / 6;
+  if (choice < 1 / 3) {
+    // Convex tail fin
+    var cornerX = this.x + 7 * this.width / 8;
+    var cpTopY = this.y + this.height / 3;
+    var cpBottomY = this.y + 2 * this.height / 3;
+    ctx.lineTo(this.adjustX(cornerX), endTopY);
+    ctx.bezierCurveTo(this.adjustX(this.x + this.width), cpTopY, this.adjustX(this.x + this.width), cpBottomY, this.adjustX(cornerX), endBottomY);
+    ctx.lineTo(this.adjustX(finX), finBottomY);
+  } else if (choice < 2 / 3) {
+    // Flat tail fin
+    var cornerX = this.x + this.width;
+    ctx.lineTo(this.adjustX(cornerX), endTopY);
+    ctx.lineTo(this.adjustX(cornerX), endBottomY);
+    ctx.lineTo(this.adjustX(finX), finBottomY);
+  } else {
+    // Concave tail fin
+    var cornerX = this.x + this.width;
+    var cpX = this.x + 7 * this.width / 8;
+    var cpY = this.y + this.height / 2;
+    ctx.lineTo(this.adjustX(cornerX), endTopY);
+    ctx.quadraticCurveTo(this.adjustX(cpX), cpY, this.adjustX(cornerX), endBottomY);
+    ctx.lineTo(this.adjustX(finX), finBottomY);
+  }
+};
+
+var Aquarium = function(canvas) {
+  Drawer.call(this, canvas);
+};
+
+Aquarium.prototype = Object.create(Drawer.prototype);
+
+Aquarium.prototype.constructor = Aquarium;
+
+Aquarium.prototype.draw = function() {
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+    ctx.lineWidth = 2;
+    for (var i = 0; i < 4; i++) {
+      var grassWidth = this.canvas.width / 12 + Math.random() * this.canvas.width / 24;
+      var grassCenterX = this.canvas.width / 12 + (1 / 2 - Math.random()) * this.canvas.width / 6;
+      var grassTipY = Math.random() * this.canvas.height / 6;
+      var grassHeight = this.canvas.height - grassTipY;
+
+      var bottomCPY = this.canvas.height - (Math.random() / 2) * grassHeight;
+      var topCPY = this.canvas.height - grassHeight / 2 - (Math.random() / 2) * grassHeight;
+
+      ctx.beginPath();
+      ctx.moveTo(grassCenterX - grassWidth / 2, this.canvas.height);
+      if (Math.random() < 0.5) {
+        var bottomCPX = grassCenterX - grassWidth / 2 - grassWidth * 2 * Math.random();
+        var topCPX1 = grassCenterX + grassWidth / 2 + grassWidth * 2 * Math.random();
+        var topCPX2 = topCPX1 + grassWidth / 2;
+        ctx.bezierCurveTo(bottomCPX, bottomCPY, topCPX1, topCPY, grassCenterX, grassTipY);
+        ctx.bezierCurveTo(topCPX2, topCPY, bottomCPX, bottomCPY, grassCenterX + grassWidth / 2, this.canvas.height);
+      } else {
+        var bottomCPX = grassCenterX + grassWidth / 2 + grassWidth * 2 * Math.random();
+        var topCPX1 = grassCenterX - grassWidth / 2 - grassWidth * 2 * Math.random();
+        var topCPX2 = topCPX1 - grassWidth / 2;
+        ctx.bezierCurveTo(bottomCPX, bottomCPY, topCPX2, topCPY, grassCenterX, grassTipY);
+        ctx.bezierCurveTo(topCPX1, topCPY, bottomCPX, bottomCPY, grassCenterX + grassWidth / 2, this.canvas.height);
+      }
+      ctx.closePath();
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.stroke();
+      ctx.save();
+      ctx.clip();
+      var intercept = 800 + 800 * Math.random();
+      if (Math.random() < 0.5) {
+        intercept *= -1;
+      }
+      var step = 50 + 20 * Math.random();
+      for (var y = Math.min(intercept, -intercept); y < Math.max(this.canvas.height - intercept, this.canvas.height + intercept); y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(this.canvas.width, y + intercept);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    ctx.lineWidth = 3;
+
+    var circleGap = this.canvas.width / 50;
+    for (var i = 0; i < 100; i++) {
+      var numRings = 3 + Math.floor(Math.random() * 10);
+      var centerX = Math.random() * this.canvas.width;
+      var centerY = (99 / 100) * this.canvas.height + Math.random() * numRings * circleGap;
+      for (var ring = numRings; ring > 0; ring--) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, ring * circleGap, 0, 2 * Math.PI);
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+        ctx.stroke();
+      }
+    }
+    var stripeHeight = this.canvas.height / 8;
+    var minLength = this.canvas.width / 12;
+    var maxLength = this.canvas.width / 6;
+    for (var row = 0; row < (3 / 4) * this.canvas.height / stripeHeight; row++) {
+      var x = Math.random() * (maxLength + (row % 2) * maxLength);
+      while (x + minLength < this.canvas.width) {
+        var width = this.canvas.width / 6 + Math.random() * this.canvas.width / 6;
+        var height = (1 - Math.random() * 0.5) * width;
+        var y = (row + Math.random()) * stripeHeight;
+        var fish = new Fish(this.canvas, x, y, width, height, Math.random() < 0.5);
+        fish.draw();
+        x += (2 * width + Math.random() * maxLength);
+      }
+    }
+    var bubbleY = Math.random() * this.canvas.height / 12;
+    var lowestBubbleLevel = (7 / 8) * this.canvas.height;
+    while(bubbleY < lowestBubbleLevel) {
+      var bubbleSize = this.canvas.width / 24 + Math.random() * this.canvas.width / 24;
+      // var bubbleX = 4 * this.canvas.width / 6 + Math.random() * this.canvas.width / 3;
+      var bubbleX = 5 * this.canvas.width / 6 + (1 / 2 - Math.random()) * (this.canvas.width / 3) * (1 - bubbleY / lowestBubbleLevel);
+      console.log(bubbleX);
+      ctx.beginPath();
+      ctx.arc(bubbleX, bubbleY, bubbleSize / 2, 0, 2 * Math.PI);
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      bubbleY += bubbleSize / 2 + Math.random() * this.canvas.height / 6;
+    }
+  }
+};
+
 var testHappy = function() {
   var canvas = $("#coloring-page")[0];
   if (canvas.getContext) {
@@ -1442,6 +1623,10 @@ $(document).ready(function() {
       case "Double Spiral":
         var altRing = new AltRing(pageCanvas, 15, true);
         altRing.draw();
+        break;
+      case "Aquarium":
+        var aquarium = new Aquarium(pageCanvas);
+        aquarium.draw();
         break;
       default:
         testHappy();
