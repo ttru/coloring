@@ -1658,6 +1658,54 @@ LeafFall.prototype.draw = function() {
   }
 };
 
+var Spots = function(canvas) {
+  Drawer.call(this, canvas);
+};
+
+Spots.prototype = Object.create(Drawer.prototype);
+
+Spots.prototype.constructor = Spots;
+
+Spots.prototype.draw = function() {
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+    var clusterRadius = Math.min(this.canvas.width, this.canvas.height) / (2 + Math.sqrt(2));
+    var numClusters = Math.ceil(1 + (Math.max(this.canvas.width, this.canvas.height) - 2 * clusterRadius) / (Math.sqrt(2) * clusterRadius));
+    var offsetDist = (2 * clusterRadius + (numClusters - 1) * (Math.sqrt(2) * clusterRadius) - Math.max(this.canvas.width, this.canvas.height)) / 2;
+    var order = (Math.random() < 0.5) ? 0 : 1;
+    var numLayers = 3 + Math.floor(Math.random() * 3);
+    var maxRadius = 0.4 * clusterRadius / numLayers;
+    for (var i = 0; i < numClusters; i++) {
+      if (this.canvas.width < this.canvas.height) {
+        var clusterCenterX = (i % 2 === order) ? clusterRadius : this.canvas.width - clusterRadius;
+        var clusterCenterY = clusterRadius + i * Math.sqrt(2) * clusterRadius - offsetDist;
+      } else {
+        var clusterCenterX = clusterRadius + i * Math.sqrt(2) * clusterRadius - offsetDist;
+        var clusterCenterY = (i % 2 === order) ? clusterRadius : this.canvas.width - clusterRadius;
+      }
+      for (var n = 0; n < numLayers; n++) {
+        if (n === 0) {
+          var randomScale = 1 + (1 / 2 - Math.random()) / 6;
+          ctx.beginPath();
+          ctx.arc(clusterCenterX, clusterCenterY, randomScale * maxRadius, 0, 2 * Math.PI);
+          ctx.stroke();
+        } else {
+          var angleInterval = Math.PI * 2 / (6 * n);
+          for (var j = 0; j < 6 * n; j++) {
+            var randomScale = 1 + (1 / 2 - Math.random()) / 2;
+            var angle = (n % 2) * angleInterval / 2 + j * angleInterval;
+            var x = clusterCenterX + Math.cos(angle) * (n * clusterRadius / numLayers);
+            var y = clusterCenterY + Math.sin(angle) * (n * clusterRadius / numLayers);
+            ctx.beginPath();
+            ctx.arc(x, y, randomScale * maxRadius, 0, 2 * Math.PI);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+  }
+};
+
 var testHappy = function() {
   var canvas = $("#coloring-page")[0];
   if (canvas.getContext) {
@@ -1758,6 +1806,10 @@ $(document).ready(function() {
       case "Leaves":
         var leafFall = new LeafFall(pageCanvas);
         leafFall.draw();
+        break;
+      case "Spots":
+        var spots = new Spots(pageCanvas);
+        spots.draw();
         break;
       default:
         testHappy();
