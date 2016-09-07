@@ -1531,6 +1531,133 @@ Aquarium.prototype.draw = function() {
   }
 };
 
+var Leaf = function(canvas, stemX, stemY, stemWidth, leafLength, angle) {
+  Drawer.call(this, canvas);
+  this.stemX = stemX;
+  this.stemY = stemY;
+  this.stemWidth = stemWidth;
+  this.leafLength = leafLength;
+  this.angle = angle;
+};
+
+Leaf.prototype = Object.create(Drawer.prototype);
+
+Leaf.prototype.constructor = Leaf;
+
+Leaf.prototype.setContextParams = function() {
+  if (Drawer.prototype.setContextParams.call(this)) {
+    var ctx = this.canvas.getContext('2d');
+    ctx.lineWidth = 4;
+    return true;
+  }
+  return false;
+};
+
+Leaf.prototype.draw = function() {
+  if (this.setContextParams()) {
+    var ctx = this.canvas.getContext('2d');
+    var stemLeftBase = this.rotatePoint(this.stemX - this.stemWidth / 2, this.stemY, this.stemX, this.stemY, this.angle);
+    var stemRightBase = this.rotatePoint(this.stemX + this.stemWidth / 2, this.stemY, this.stemX, this.stemY, this.angle);
+    var stemLeftCorner = this.rotatePoint(this.stemX - this.stemWidth / 2, this.stemY - this.leafLength / 4, this.stemX, this.stemY, this.angle);
+    var stemRightCorner = this.rotatePoint(this.stemX + this.stemWidth / 2, this.stemY - this.leafLength / 4, this.stemX, this.stemY, this.angle);
+    var stemTip = this.rotatePoint(this.stemX, this.stemY - this.leafLength, this.stemX, this.stemY, this.angle);
+
+    var bottomCPXDist = Math.random() * this.leafLength;
+    var bottomCPYDist = (1 / 2 - Math.random()) * this.leafLength / 2;
+    var topCPXDist = Math.random() * this.leafLength / 2;
+    var topCPYDist = Math.random() * this.leafLength / 4;
+
+    var bottomLeftCP = this.rotatePoint(this.stemX - this.stemWidth / 2 - bottomCPXDist, this.stemY - this.leafLength / 4 - bottomCPYDist, this.stemX, this.stemY, this.angle);
+    var bottomRightCP = this.rotatePoint(this.stemX + this.stemWidth / 2 + bottomCPXDist, this.stemY - this.leafLength / 4 - bottomCPYDist, this.stemX, this.stemY, this.angle);
+    var topLeftCP = this.rotatePoint(this.stemX - topCPXDist, this.stemY - this.leafLength + topCPYDist, this.stemX, this.stemY, this.angle);
+    var topRightCP = this.rotatePoint(this.stemX + topCPXDist, this.stemY - this.leafLength + topCPYDist, this.stemX, this.stemY, this.angle);
+
+    ctx.beginPath();
+    ctx.moveTo(stemLeftBase[0], stemLeftBase[1]);
+    ctx.lineTo(stemLeftCorner[0], stemLeftCorner[1]);
+    ctx.lineTo(stemTip[0], stemTip[1]);
+    ctx.lineTo(stemRightCorner[0], stemRightCorner[1]);
+    ctx.lineTo(stemRightBase[0], stemRightBase[1]);
+    ctx.closePath();
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.stroke();
+
+    var ribGap = this.leafLength / 10 + Math.random() * this.leafLength / 10;
+
+    ctx.beginPath();
+    ctx.moveTo(stemLeftCorner[0], stemLeftCorner[1]);
+    ctx.bezierCurveTo(bottomLeftCP[0], bottomLeftCP[1], topLeftCP[0], topLeftCP[1], stemTip[0], stemTip[1]);
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.stroke();
+    ctx.closePath();
+    ctx.save();
+    ctx.clip();
+    ctx.lineWidth = 2;
+    for (var i = this.leafLength / 4; i <= this.leafLength; i += ribGap) {
+      ctx.beginPath();
+      var leftPoint = this.rotatePoint(this.stemX - this.leafLength, this.stemY - (i + 5 * ribGap), this.stemX, this.stemY, this.angle);
+      var rightPoint = this.rotatePoint(this.stemX, this.stemY - i, this.stemX, this.stemY, this.angle);
+      ctx.moveTo(rightPoint[0], rightPoint[1]);
+      ctx.lineTo(leftPoint[0], leftPoint[1]);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.lineWidth = 4;
+
+    ctx.beginPath();
+    ctx.moveTo(stemRightCorner[0], stemRightCorner[1]);
+    ctx.bezierCurveTo(bottomRightCP[0], bottomRightCP[1], topRightCP[0], topRightCP[1], stemTip[0], stemTip[1]);
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.stroke();
+    ctx.save();
+    ctx.clip();
+    ctx.lineWidth = 2;
+    for (var i = this.leafLength / 4; i <= this.leafLength; i += ribGap) {
+      ctx.beginPath();
+      var leftPoint = this.rotatePoint(this.stemX, this.stemY - i, this.stemX, this.stemY, this.angle);
+      var rightPoint = this.rotatePoint(this.stemX + this.leafLength, this.stemY - (i + 5 * ribGap), this.stemX, this.stemY, this.angle);
+      ctx.moveTo(leftPoint[0], leftPoint[1]);
+      ctx.lineTo(rightPoint[0], rightPoint[1]);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.lineWidth = 4;
+  }
+};
+
+var LeafFall = function(canvas) {
+  Drawer.call(this, canvas);
+};
+
+LeafFall.prototype = Object.create(Drawer.prototype);
+
+LeafFall.prototype.constructor = LeafFall;
+
+LeafFall.prototype.draw = function() {
+  if (this.setContextParams()) {
+    var stripeHeight = this.canvas.height / 8;
+    var maxLength = this.canvas.width / 6;
+    for (var row = 0; row < this.canvas.height / stripeHeight; row++) {
+      var x = Math.random() * (maxLength + (row % 2) * maxLength);
+      while (x < this.canvas.width) {
+        var stemWidth = (1 + Math.random()) * this.canvas.width / 80;
+        var height = (1 + Math.random()) * this.canvas.height / 6;
+        var angle = Math.random() * Math.PI * 2;
+        var y = (row + Math.random()) * stripeHeight;
+        var leaf = new Leaf(this.canvas, x, y, stemWidth, height, angle);
+        leaf.draw();
+        x += (height + Math.random() * maxLength);
+      }
+    }
+  }
+};
+
 var testHappy = function() {
   var canvas = $("#coloring-page")[0];
   if (canvas.getContext) {
@@ -1627,6 +1754,10 @@ $(document).ready(function() {
       case "Aquarium":
         var aquarium = new Aquarium(pageCanvas);
         aquarium.draw();
+        break;
+      case "Leaves":
+        var leafFall = new LeafFall(pageCanvas);
+        leafFall.draw();
         break;
       default:
         testHappy();
