@@ -1565,7 +1565,7 @@ Leaf.prototype.draw = function() {
     var bottomCPXDist = Math.random() * this.leafLength;
     var bottomCPYDist = (1 / 2 - Math.random()) * this.leafLength / 2;
     var topCPXDist = Math.random() * this.leafLength / 2;
-    var topCPYDist = Math.random() * this.leafLength / 4;
+    var topCPYDist = Math.random() * this.leafLength / 2;
 
     var bottomLeftCP = this.rotatePoint(this.stemX - this.stemWidth / 2 - bottomCPXDist, this.stemY - this.leafLength / 4 - bottomCPYDist, this.stemX, this.stemY, this.angle);
     var bottomRightCP = this.rotatePoint(this.stemX + this.stemWidth / 2 + bottomCPXDist, this.stemY - this.leafLength / 4 - bottomCPYDist, this.stemX, this.stemY, this.angle);
