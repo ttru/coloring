@@ -1770,6 +1770,10 @@ $(document).ready(function() {
       ctx.clearRect(0, 0, coloringCanvas.width, coloringCanvas.height);
     }
     var selectedPattern = $($(".pattern.selected")[0]).html();
+    if (selectedPattern === "Random") {
+      var index = Math.floor(Math.random() * ($(".pattern").length - 1));
+      selectedPattern = $($(".pattern")[index]).html();
+    }
     switch (selectedPattern) {
       case "Rings":
         var ring = new Ring(pageCanvas, 15, true);
